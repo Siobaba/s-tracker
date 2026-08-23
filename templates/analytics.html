@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="margin-bottom: 20px; text-transform: uppercase; color: var(--neon-green); letter-spacing: 1px;">
+        <i class="fa-solid fa-chart-pie"></i> Аналитика профита
+    </h2>
+
+    <!-- Сетка карточек со сводкой -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+        <div class="card" style="margin-bottom: 0;">
+            <div class="balance-title">Рекордная выплата</div>
+            <div class="balance-amount" style="font-size: 28px;">
+                <span class="money-val" data-usd="{{ max_income }}">${{ "%.2f"|format(max_income) }}</span>
+            </div>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+            <div class="balance-title">Средний чек</div>
+            <div class="balance-amount" style="font-size: 28px; color: #fff;">
+                <span class="money-val" data-usd="{{ avg_income }}">${{ "%.2f"|format(avg_income) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Разбивка по источникам -->
+    <h3 style="margin-bottom: 14px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; color: var(--text-muted);">
+        Доход по источникам
+    </h3>
+
+    <div class="tx-list">
+        {% for src in sources_stat %}
+            <div class="tx-item status-received">
+                <div class="tx-info">
+                    <h4>{{ src.source }}</h4>
+                    <span>Выплат: {{ src.count }} шт.</span>
+                </div>
+                <div class="tx-amount">
+                    <span class="money-val" data-usd="{{ src.total }}">+${{ "%.2f"|format(src.total) }}</span>
+                </div>
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center;">Нет полученных выплат для анализа.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

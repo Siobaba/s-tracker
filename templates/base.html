@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Tracker | Finance</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Навигационная панель (Сайдбар на ПК / Док внизу на мобилках) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-bolt"></i> S-TRACKER
+        </div>
+
+        <div class="nav-links">
+            <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/incomes" class="nav-item {% if request.path == '/incomes' %}active{% endif %}">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Доходы</span>
+            </a>
+            <a href="/expenses" class="nav-item {% if request.path == '/expenses' %}active{% endif %}">
+                <i class="fa-solid fa-fire"></i>
+                <span>Расходы</span>
+            </a>
+            <a href="/goals" class="nav-item {% if request.path == '/goals' %}active{% endif %}">
+                <i class="fa-solid fa-crosshairs"></i>
+                <span>Цели</span>
+            </a>
+            <a href="/analytics" class="nav-item {% if request.path == '/analytics' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Статистика</span>
+            </a>
+        </div>
+
+        <!-- Переключатель валюты для ПК -->
+        <div class="currency-switch-wrapper nav-profile" style="flex-direction: row; justify-content: center; margin-top: auto;">
+            <span id="label-usd" class="currency-active">USD</span>
+            <label class="switch">
+                <input type="checkbox" id="currency-toggle-desktop" class="currency-toggle">
+                <span class="slider"></span>
+            </label>
+            <span id="label-rub">RUB</span>
+        </div>
+
+        <!-- Блок профиля для ПК -->
+        <div class="nav-profile" style="margin-top: 15px;">
+            <div class="avatar"><i class="fa-solid fa-user-ninja"></i></div>
+            <div class="user-info">
+                <div class="user-name">Daniil</div>
+                <div class="user-role">Admin</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент страницы -->
+    <main class="content">
+        <!-- Шапка для мобильных устройств -->
+        <div class="mobile-header">
+            <div><i class="fa-solid fa-bolt" style="color: var(--neon-green);"></i> S-TRACKER</div>
+            <label class="switch" style="transform: scale(0.8);">
+                <input type="checkbox" class="currency-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Скрипт актуального курса и конвертации валют -->
+    <script>
+        let EXCHANGE_RATE = 95.5; // Резервный курс
+        const toggles = document.querySelectorAll('.currency-toggle');
+
+        async function getLiveRate() {
+            try {
+                const response = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await response.json();
+                if (data && data.rates && data.rates.RUB) {
+                    EXCHANGE_RATE = data.rates.RUB;
+                    renderMoney();
+                }
+            } catch (e) {
+                console.log("Используется резервный курс обмена.");
+            }
+        }
+
+        function renderMoney() {
+            const isRub = localStorage.getItem('currency') === 'RUB';
+
+            toggles.forEach(t => t.checked = isRub);
+
+            const lblUsd = document.getElementById('label-usd');
+            const lblRub = document.getElementById('label-rub');
+            if (lblUsd && lblRub) {
+                lblUsd.className = isRub ? '' : 'currency-active';
+                lblRub.className = isRub ? 'currency-active' : '';
+            }
+
+            document.querySelectorAll('.money-val').forEach(el => {
+                const raw = el.getAttribute('data-usd');
+                if (raw === null || raw === undefined) return;
+                const usdValue = parseFloat(raw);
+                if (isNaN(usdValue)) return;
+
+                const isIncomeCard = el.closest('.tx-amount') !== null && usdValue > 0;
+                // Автоматически определяем плюс для доходов и минус для расходов, если нужно
+                const prefix = (el.textContent.trim().startsWith('-')) ? '-' : (isIncomeCard ? '+' : '');
+
+                if (isRub) {
+                    const rub = Math.round(Math.abs(usdValue) * EXCHANGE_RATE);
+                    const formattedRub = rub.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+                    el.innerText = (prefix === '-' ? '-' : (isIncomeCard ? '+' : '')) + formattedRub + ' ₽';
+                } else {
+                    el.innerText = (prefix === '-' ? '-' : (isIncomeCard ? '+' : '')) + '$' + Math.abs(usdValue).toFixed(2);
+                }
+            });
+        }
+
+        toggles.forEach(t => {
+            t.addEventListener('change', function() {
+                localStorage.setItem('currency', this.checked ? 'RUB' : 'USD');
+                renderMoney();
+            });
+        });
+
+        renderMoney();
+        getLiveRate();
+    </script>
+</body>
+</html>

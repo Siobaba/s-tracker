@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="margin-bottom: 25px; text-transform: uppercase; color: var(--status-red); letter-spacing: 2px; grid-column: 1/-1;">
+        <i class="fa-solid fa-fire"></i> Учет расходов
+    </h2>
+
+    <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; align-items: start;">
+        <!-- Форма добавления -->
+        <div>
+            <div class="card" style="position: sticky; top: 40px;">
+                <div class="balance-title" style="margin-bottom: 20px; color: var(--status-red);">Добавить расход</div>
+                <form action="/add_expense" method="POST" class="custom-form">
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <input type="text" name="category" placeholder="Например: Сервер, Реклама" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма ($)</label>
+                        <input type="number" step="0.01" name="amount" placeholder="15.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата</label>
+                        <input type="date" name="date" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label>Комментарий</label>
+                        <input type="text" name="comment" placeholder="Например: Продление Kamatera">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; border-color: var(--status-red); color: var(--status-red);">
+                        <i class="fa-solid fa-plus"></i> Списать
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список расходов -->
+        <div>
+            <div class="tx-list">
+                {% for item in expenses %}
+                    <div class="tx-item" style="border-left-color: var(--status-red);">
+                        <div class="tx-info">
+                            <h4 style="color: #fff;">{{ item.category }}</h4>
+                            <span>{{ item.date }} &bull; {{ item.comment }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div class="tx-amount" style="color: var(--status-red);">
+                                -<span class="money-val" data-usd="{{ item.amount }}">${{ "%.2f"|format(item.amount) }}</span>
+                            </div>
+                            <div class="tx-actions">
+                                <a href="/delete_expense/{{ item.id }}" title="Удалить" class="action-btn del-btn">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 40px;">Расходов пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

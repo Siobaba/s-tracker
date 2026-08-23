@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="margin-bottom: 20px; text-transform: uppercase; color: var(--neon-green); letter-spacing: 1px;">
+        <i class="fa-solid fa-wallet"></i> Учет доходов
+    </h2>
+
+    <!-- Форма добавления -->
+    <div class="card">
+        <div class="balance-title" style="margin-bottom: 15px;">Добавить поступление</div>
+        <form action="/add_income" method="POST" class="custom-form">
+            <div class="form-group">
+                <label>Источник</label>
+                <input type="text" name="source" placeholder="Например: Партнерка Mysor, Продажа акка" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Сумма (В долларах/USDT)</label>
+                    <input type="number" step="0.01" name="amount" placeholder="30.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Дата</label>
+                    <input type="date" name="date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Статус выплаты</label>
+                <select name="status">
+                    <option value="expected">🟠 Ожидается</option>
+                    <option value="received">🟢 Получено</option>
+                    <option value="cancelled">🔴 Отменено</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Комментарий</label>
+                <input type="text" name="comment" placeholder="Например: Ролик на 416к">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> Зафиксировать
+            </button>
+        </form>
+    </div>
+
+    <!-- Фильтры с иконками -->
+    <div class="filter-bar">
+        <a href="/incomes?status=all" class="filter-btn {% if current_status == 'all' %}active{% endif %}">
+            <i class="fa-solid fa-layer-group"></i> Все
+        </a>
+        <a href="/incomes?status=received" class="filter-btn {% if current_status == 'received' %}active{% endif %}">
+            <i class="fa-solid fa-check-circle"></i> Получено
+        </a>
+        <a href="/incomes?status=expected" class="filter-btn {% if current_status == 'expected' %}active{% endif %}">
+            <i class="fa-solid fa-clock"></i> Ожидается
+        </a>
+    </div>
+
+    <!-- Список доходов -->
+    <div class="tx-list">
+        {% for item in incomes %}
+            <div class="tx-item status-{{ item.status }}">
+                <div class="tx-info">
+                    <h4>{{ item.source }}</h4>
+                    <span>{{ item.date }} &bull; {{ item.comment }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+
+                    <!-- Вот тут спан для тумблера валют -->
+                    <div class="tx-amount">
+                        <span class="money-val" data-usd="{{ item.amount }}">+${{ "%.2f"|format(item.amount) }}</span>
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <div class="tx-actions">
+                        {% if item.status == 'expected' %}
+                            <a href="/mark_received/{{ item.id }}" title="Отметить полученным" class="action-btn check-btn">
+                                <i class="fa-solid fa-check"></i>
+                            </a>
+                        {% endif %}
+                        <a href="/delete_income/{{ item.id }}" title="Удалить" class="action-btn del-btn">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center; margin-top: 20px;">Записей не найдено.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

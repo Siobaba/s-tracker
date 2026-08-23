@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="margin-bottom: 25px; text-transform: uppercase; color: var(--neon-cyan); letter-spacing: 2px; grid-column: 1/-1;">
+        <i class="fa-solid fa-crosshairs"></i> Финансовые цели
+    </h2>
+
+    <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; align-items: start;">
+        <!-- Форма добавления цели -->
+        <div>
+            <div class="card" style="position: sticky; top: 40px;">
+                <div class="balance-title" style="margin-bottom: 20px; color: var(--neon-cyan);">Новая цель</div>
+                <form action="/add_goal" method="POST" class="custom-form">
+                    <div class="form-group">
+                        <label>Название цели</label>
+                        <input type="text" name="title" placeholder="Например: Новый ПК, Тачка" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Целевая сумма ($)</label>
+                        <input type="number" step="0.01" name="target_amount" placeholder="1000.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Дедлайн</label>
+                        <input type="date" name="deadline">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">
+                        <i class="fa-solid fa-plus"></i> Создать цель
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список целей с прогресс-барами -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for goal in goals %}
+                {% set percent = (goal.current_amount / goal.target_amount * 100) if goal.target_amount > 0 else 0 %}
+                {% set percent_clamped = 100 if percent > 100 else percent %}
+                <div class="card" style="margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h4 style="font-size: 20px; color: #fff; margin-bottom: 4px;">{{ goal.title }}</h4>
+                            <span style="color: var(--text-muted); font-size: 13px;">Дедлайн: {{ goal.deadline or 'Не указан' }}</span>
+                        </div>
+                        <a href="/delete_goal/{{ goal.id }}" class="action-btn del-btn" title="Удалить цель">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+
+                    <!-- Прогресс по деньгам -->
+                    <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 16px; margin-bottom: 8px; font-weight: 700;">
+                        <span><span class="money-val" data-usd="{{ goal.current_amount }}">${{ "%.2f"|format(goal.current_amount) }}</span></span>
+                        <span style="color: var(--text-muted);">из <span class="money-val" data-usd="{{ goal.target_amount }}">${{ "%.2f"|format(goal.target_amount) }}</span> ({{ "%.1f"|format(percent) }}%)</span>
+                    </div>
+
+                    <!-- Прогресс-бар -->
+                    <div style="width: 100%; background: rgba(0,0,0,0.6); height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,229,255,0.2); margin-bottom: 15px;">
+                        <div style="width: {{ percent_clamped }}%; background: var(--grad-primary); height: 100%; box-shadow: var(--glow-cyan); transition: width 0.5s ease;"></div>
+                    </div>
+
+                    <!-- Кнопка пополнения копилки -->
+                    <form action="/contribute_goal/{{ goal.id }}" method="POST" style="display: flex; gap: 10px;">
+                        <input type="number" step="0.01" name="sum_add" placeholder="Сумма вклада ($)" required style="padding: 8px 12px; font-size: 14px;">
+                        <button type="submit" class="filter-btn" style="background: rgba(0,255,102,0.1); border-color: var(--neon-green); color: var(--neon-green); cursor: pointer;">
+                            + Добавить
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted); text-align: center; margin-top: 40px;">Активных целей пока нет.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -6,9 +6,6 @@
     <title>S-TRACKER // CYBER TERMINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* =========================================
-           S-TRACKER - ULTRA CYBERPUNK STYLESHEET
-           ========================================= */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
 
         :root {
@@ -45,7 +42,6 @@
             background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
         }
 
-        /* НАВИГАЦИЯ */
         .navbar {
             background: rgba(5, 7, 12, 0.85);
             backdrop-filter: blur(15px);
@@ -85,17 +81,10 @@
             padding: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); box-shadow: 0 5px 20px rgba(0,229,255,0.05);
         }
 
-        /* КОНТЕНТ И КАРТОЧКИ */
         .content { padding: 0 15px 120px 15px; max-width: 850px; margin: 0 auto; width: 100%; }
         .card {
             background: var(--card-bg); border-radius: 12px; padding: 25px; margin-bottom: 30px;
             position: relative; border: 1px solid rgba(0, 229, 255, 0.15); box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 229, 255, 0.05);
-        }
-
-        .card::before {
-            content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
-            background: linear-gradient(45deg, var(--neon-green), transparent 40%, transparent 60%, var(--neon-cyan));
-            z-index: -1; border-radius: 13px; opacity: 0.5; animation: rotateBorder 4s linear infinite;
         }
 
         .balance-title {
@@ -104,7 +93,7 @@
         }
         .balance-title::before {
             content: ''; display: block; width: 8px; height: 8px; background: var(--neon-green);
-            box-shadow: var(--glow-green); border-radius: 50%; animation: blink 1.5s infinite;
+            box-shadow: var(--glow-green); border-radius: 50%;
         }
 
         .balance-amount {
@@ -112,7 +101,6 @@
             background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 0px 8px rgba(0, 255, 102, 0.3));
         }
 
-        /* ФОРМЫ */
         .custom-form { display: flex; flex-direction: column; gap: 20px; }
         .form-group { display: flex; flex-direction: column; gap: 10px; }
         .form-group label { font-size: 13px; text-transform: uppercase; color: var(--neon-cyan); font-weight: 700; letter-spacing: 1px; }
@@ -136,37 +124,44 @@
         }
         .btn-primary:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 30px rgba(0,255,102,0.6); transform: scale(1.02); }
 
-        /* СПИСОК ТРАНЗАКЦИЙ */
+        .del-btn {
+            background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; color: #ff0055;
+            width: 36px; height: 36px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .del-btn:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055; }
+
         .tx-list { display: flex; flex-direction: column; gap: 15px; }
         .tx-item {
             display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(10,14,25,0.9), rgba(5,7,12,0.9));
             padding: 20px 25px; border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.2); border-left: 6px solid var(--text-muted);
-            position: relative; overflow: hidden; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden; transition: 0.3s;
         }
-        .tx-item::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.1), transparent); transform: skewX(-30deg); transition: 0.5s;
-        }
-        .tx-item:hover { transform: translateX(10px); border-color: var(--neon-cyan); box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0, 229, 255, 0.1); }
-        .tx-item:hover::before { left: 200%; }
-        .tx-info h4 { font-size: 22px; margin-bottom: 5px; color: #fff; letter-spacing: 1px; }
-        .tx-info span { color: var(--text-muted); font-size: 14px; font-weight: 600; }
-        .tx-amount { font-size: 24px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+        .dot-green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
+        .dot-orange { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
+        .dot-red { background: #ff0055; box-shadow: 0 0 8px #ff0055; }
 
         .status-received { border-left-color: var(--neon-green); }
         .status-received .tx-amount { color: var(--neon-green); text-shadow: var(--glow-green); }
+        .status-pending { border-left-color: #ffaa00; }
+        .status-pending .tx-amount { color: #ffaa00; text-shadow: 0 0 10px rgba(255,170,0,0.5); }
         .status-cancelled { border-left-color: #ff0055; opacity: 0.7; }
-        .status-cancelled .tx-amount { color: #ff0055; text-shadow: 0 0 15px rgba(255,0,85,0.4); text-decoration: line-through; }
+        .status-cancelled .tx-amount { color: #ff0055; text-decoration: line-through; }
 
         .currency-switch-wrapper {
-            display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 18px; color: var(--text-muted); background: rgba(0,0,0,0.5); padding: 12px 25px; border: 1px solid rgba(0,229,255,0.2); border-radius: 50px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 18px; color: var(--text-muted); background: rgba(0,0,0,0.5); padding: 12px 25px; border: 1px solid rgba(0,229,255,0.2); border-radius: 50px;
         }
-        .currency-active { color: var(--text-pure); text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .currency-active { color: var(--text-pure); }
 
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes rotateBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        /* Прогресс бар целей */
+        .goal-bar {
+            width: 100%; height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2);
+            border-radius: 5px; margin: 10px 0; overflow: hidden;
+        }
+        .goal-fill { height: 100%; background: var(--grad-primary); box-shadow: var(--glow-cyan); }
 
-        /* АДАПТИВ ПК */
         @media (min-width: 900px) {
             body { flex-direction: row; }
             .navbar {
@@ -174,28 +169,21 @@
                 border-top: none; border-right: 2px solid rgba(0,229,255,0.2); padding: 50px 25px; box-shadow: 20px 0 50px rgba(0,0,0,0.8);
                 background: linear-gradient(180deg, rgba(5,7,12,0.95), rgba(2,3,5,0.98)); z-index: 1000;
             }
-            .nav-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 50px; font-size: 28px; font-weight: 800; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 4px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.4)); }
+            .nav-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 50px; font-size: 28px; font-weight: 800; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 4px; }
             .nav-brand i { color: var(--neon-green); -webkit-text-fill-color: initial; }
             .nav-links { flex-direction: column; gap: 15px; flex: 1; justify-content: flex-start; }
             .nav-item {
                 flex-direction: row; gap: 20px; font-size: 16px; padding: 20px; background: rgba(0,229,255,0.02);
                 border: 1px solid rgba(0,229,255,0.1); border-radius: 8px;
             }
-            .nav-item::before {
-                content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--neon-cyan); transform: scaleY(0); transition: 0.3s;
-            }
-            .nav-item:hover, .nav-item.active {
-                background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); transform: translateX(10px); box-shadow: inset 5px 0 15px rgba(0,229,255,0.05);
-            }
-            .nav-item.active::before { transform: scaleY(1); box-shadow: var(--glow-cyan); }
-            .nav-item.active::after { display: none; }
+            .nav-item:hover, .nav-item.active { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); transform: translateX(10px); }
             .nav-profile {
                 display: flex; align-items: center; gap: 15px; padding: 20px; background: rgba(0,0,0,0.5); border-radius: 12px;
-                border: 1px solid rgba(0,255,102,0.2); margin-top: auto; box-shadow: inset 0 0 15px rgba(0,255,102,0.05);
+                border: 1px solid rgba(0,255,102,0.2); margin-top: auto;
             }
-            .avatar { width: 50px; height: 50px; background: var(--grad-primary); color: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: var(--glow-green); }
+            .avatar { width: 50px; height: 50px; background: var(--grad-primary); color: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
             .user-name { font-weight: 800; font-size: 16px; color: #fff; }
-            .user-role { font-size: 12px; font-weight: 700; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px;}
+            .user-role { font-size: 12px; font-weight: 700; color: var(--neon-cyan); letter-spacing: 2px;}
             .mobile-header { display: none; }
             .content { margin-left: 300px; padding: 60px 70px; max-width: 1400px; width: calc(100% - 300px); }
         }
@@ -230,13 +218,13 @@
                 <i class="fa-solid fa-lightbulb"></i>
                 <span>Идеи</span>
             </a>
+            <a href="#goals-section" class="nav-item">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>Цели</span>
+            </a>
             <a href="#calc-section" class="nav-item">
                 <i class="fa-solid fa-calculator"></i>
                 <span>Комиссия</span>
-            </a>
-            <a href="#history-section" class="nav-item">
-                <i class="fa-solid fa-wallet"></i>
-                <span>История</span>
             </a>
         </div>
         <div class="nav-profile">
@@ -250,17 +238,18 @@
 
     <main class="content">
         
-        <!-- 1. Главная карточка Балансов -->
+        <!-- Главная карточка Балансов -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="balance-title">ЗАРАБОТОК ЗА МЕСЯЦ</div>
-                <div class="currency-switch-wrapper">
-                    <span class="currency-active">₽</span>
-                </div>
+                <div class="currency-switch-wrapper"><span class="currency-active">₽</span></div>
             </div>
             
             <div class="balance-amount">{{ "%.2f"|format(month_earned) }} ₽</div>
-            <div style="font-size: 13px; font-weight: 700; color: var(--neon-cyan); letter-spacing: 2px;">ЗА МЕСЯЦ</div>
+            <div style="display: flex; gap: 20px; font-size: 13px; font-weight: 700;">
+                <span style="color: var(--neon-cyan); letter-spacing: 1px;">ЗА МЕСЯЦ</span>
+                <span style="color: #ffaa00;"><span class="status-dot dot-orange"></span>В ОЖИДАНИИ: {{ "%.2f"|format(month_pending) }} ₽</span>
+            </div>
 
             <hr style="border: 0; border-top: 1px solid rgba(0, 229, 255, 0.15); margin: 20px 0;">
 
@@ -277,59 +266,21 @@
             </div>
         </div>
 
-        <!-- 2. Карточка Ранга (50 уровней) -->
+        <!-- 50 Рангов -->
         <div class="card">
             <div class="balance-title" style="justify-content: space-between;">
                 <span>RANK {{ rank.num }} // {{ rank.name }}</span>
                 <span>{{ "%.0f"|format(rank.current_val) }} / {{ rank.target_val }} ₽</span>
             </div>
-            
-            <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; margin: 15px 0; overflow: hidden;">
-                <div style="height: 100%; width: {{ rank.progress_pct }}%; background: var(--grad-primary); box-shadow: var(--glow-green);"></div>
+            <div class="goal-bar">
+                <div class="goal-fill" style="width: {{ rank.progress_pct }}%;"></div>
             </div>
-            
             <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
                 До следующего ранга: <span style="color: var(--neon-green);">{{ "%.2f"|format(rank.needed) }} ₽</span>
             </div>
         </div>
 
-        <!-- 3. Калькулятор комиссий -->
-        <div class="card" id="calc-section">
-            <div class="balance-title" style="margin-bottom: 20px;">КАЛЬКУЛЯТОР КОМИССИИ</div>
-            <div class="custom-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Площадка</label>
-                        <select id="preset-platform" onchange="applyPreset()">
-                            <option value="custom">Своя комиссия</option>
-                            <option value="playerok">Playerok (10%)</option>
-                            <option value="fanpay">FanPay (8%)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Сумма сделки (₽)</label>
-                        <input type="number" id="calc-amount" placeholder="1000" oninput="runCalc()">
-                    </div>
-                    <div class="form-group">
-                        <label>Комиссия (%)</label>
-                        <input type="number" id="calc-fee-rate" placeholder="10" value="10" oninput="runCalc()">
-                    </div>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,229,255,0.2); display: flex; justify-content: space-around; text-align: center;">
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Комиссия</div>
-                        <div id="res-fee" style="font-size: 18px; font-weight: 700; color: #ff0055; font-family: monospace;">0.00 ₽</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Получите чистыми</div>
-                        <div id="res-net" style="font-size: 18px; font-weight: 700; color: var(--neon-green); font-family: monospace;">0.00 ₽</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. Форма добавления операции -->
+        <!-- Форма добавления операции со статусами -->
         <div class="card">
             <div class="balance-title" style="margin-bottom: 20px;">Новая операция</div>
             <form method="POST" action="/add" class="custom-form">
@@ -352,61 +303,145 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Связать с идеей (опционально)</label>
+                        <label>Статус сделки</label>
+                        <select name="status">
+                            <option value="received">🟢 Зачтено (получено)</option>
+                            <option value="pending">🟠 Обрабатывается (в ожидании)</option>
+                            <option value="cancelled">🔴 Отклонено / Отмена</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Связать с идеей</label>
                         <select name="idea_id">
-                            <option value="">Без связи с идеей</option>
+                            <option value="">Без связи</option>
                             {% for id_item in ideas %}
                             <option value="{{ id_item.id }}">{{ id_item.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Зафиксировать профит</button>
+                <button type="submit" class="btn-primary">Зафиксировать транзакцию</button>
             </form>
         </div>
 
-        <!-- 5. История операций -->
-        <div class="card" id="history-section">
-            <div class="balance-title" style="margin-bottom: 20px;">История транзакций</div>
-            <div class="tx-list">
-                {% for tx in transactions %}
-                <div class="tx-item {{ 'status-received' if tx.category == 'Доход' else 'status-cancelled' }}">
-                    <div class="tx-info">
-                        <h4>{{ tx.title }}</h4>
-                        <span>{{ tx.date }} // {{ tx.category }}</span>
+        <!-- РАЗДЕЛ: ЦЕЛИ -->
+        <div class="card" id="goals-section">
+            <div class="balance-title" style="margin-bottom: 20px;">ФИНАНСОВЫЕ ЦЕЛИ</div>
+            
+            <form method="POST" action="/add_goal" class="custom-form" style="margin-bottom: 25px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Цель</label>
+                        <input type="text" name="title" placeholder="Например: Новый ноутбук" required>
                     </div>
-                    <div class="tx-amount">
-                        {{ "+" if tx.category == 'Доход' else "-" }}{{ "%.2f"|format(tx.amount) }} ₽
+                    <div class="form-group">
+                        <label>Целевая сумма (₽)</label>
+                        <input type="number" step="0.01" name="target" placeholder="100000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Уже накоплено (₽)</label>
+                        <input type="number" step="0.01" name="current" placeholder="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 0; padding: 12px;">+ Добавить цель</button>
+            </form>
+
+            <div class="tx-list">
+                {% for g in goals %}
+                <div class="tx-item" style="border-left-color: var(--neon-cyan); flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="color: #fff; font-size: 18px;">{{ g.title }}</h4>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="color: var(--neon-cyan); font-family: monospace; font-weight: 700;">
+                                {{ "%.0f"|format(g.current_amount) }} / {{ "%.0f"|format(g.target_amount) }} ₽
+                            </span>
+                            <form method="POST" action="/delete_goal/{{ g.id }}" style="margin: 0;">
+                                <button type="submit" class="del-btn"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="goal-bar" style="margin: 0;">
+                        <div class="goal-fill" style="width: {{ (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0 }}%;"></div>
                     </div>
                 </div>
                 {% else %}
-                <div style="text-align: center; color: var(--text-muted); padding: 25px;">
-                    Транзакций пока нет.
-                </div>
+                <div style="text-align: center; color: var(--text-muted); font-size: 13px;">Активных целей пока нет.</div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- 6. Архив месяцев -->
-        {% if history %}
+        <!-- История операций с кнопками удаления и статусами -->
         <div class="card">
-            <div class="balance-title" style="margin-bottom: 20px;">ИСТОРИЯ ЗАВЕРШЁННЫХ МЕСЯЦЕВ</div>
+            <div class="balance-title" style="margin-bottom: 20px;">История транзакций</div>
             <div class="tx-list">
-                {% for h in history %}
-                <div class="tx-item" style="border-left-color: var(--neon-cyan);">
+                {% for tx in transactions %}
+                <div class="tx-item status-{{ tx.status }}">
                     <div class="tx-info">
-                        <h4>{{ h.month_name }}</h4>
-                        <span>Операций: {{ h.income_count + h.expense_count }} // Расходы: {{ "%.2f"|format(h.expenses_amount) }} ₽</span>
+                        <h4>{{ tx.title }}</h4>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                            {% if tx.status == 'received' %}
+                                <span class="status-dot dot-green"></span><span style="color: var(--neon-green);">Зачтено</span>
+                            {% elif tx.status == 'pending' %}
+                                <span class="status-dot dot-orange"></span><span style="color: #ffaa00;">Обрабатывается</span>
+                            {% else %}
+                                <span class="status-dot dot-red"></span><span style="color: #ff0055;">Отклонен</span>
+                            {% endif %}
+                            <span>// {{ tx.date }}</span>
+                        </div>
                     </div>
-                    <div class="tx-amount" style="color: var(--neon-cyan);">
-                        {{ "%.2f"|format(h.net_income) }} ₽
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="tx-amount">
+                            {{ "+" if tx.category == 'Доход' else "-" }}{{ "%.2f"|format(tx.amount) }} ₽
+                        </div>
+                        <form method="POST" action="/delete_tx/{{ tx.id }}" style="margin: 0;">
+                            <button type="submit" class="del-btn" onclick="return confirm('Удалить эту операцию?');">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
+                {% else %}
+                <div style="text-align: center; color: var(--text-muted); padding: 25px;">Транзакций пока нет.</div>
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
 
+        <!-- Калькулятор комиссий -->
+        <div class="card" id="calc-section">
+            <div class="balance-title" style="margin-bottom: 20px;">КАЛЬКУЛЯТОР КОМИССИИ</div>
+            <div class="custom-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Площадка</label>
+                        <select id="preset-platform" onchange="applyPreset()">
+                            <option value="custom">Своя комиссия</option>
+                            <option value="playerok">Playerok (10%)</option>
+                            <option value="fanpay">FanPay (8%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма сделки (₽)</label>
+                        <input type="number" id="calc-amount" placeholder="1000" oninput="runCalc()">
+                    </div>
+                    <div class="form-group">
+                        <label>Комиссия (%)</label>
+                        <input type="number" id="calc-fee-rate" placeholder="10" value="10" oninput="runCalc()">
+                    </div>
+                </div>
+                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,229,255,0.2); display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Комиссия</div>
+                        <div id="res-fee" style="font-size: 18px; font-weight: 700; color: #ff0055; font-family: monospace;">0.00 ₽</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Получите чистыми</div>
+                        <div id="res-net" style="font-size: 18px; font-weight: 700; color: var(--neon-green); font-family: monospace;">0.00 ₽</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Цитата -->
         <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-style: italic; margin-top: 30px;">
             {{ quote }}
         </div>
@@ -427,7 +462,6 @@
             const feeRate = parseFloat(document.getElementById('calc-fee-rate').value) || 0;
             const feeVal = (amount * feeRate) / 100;
             const netVal = amount - feeVal;
-            
             document.getElementById('res-fee').innerText = feeVal.toFixed(2) + ' ₽';
             document.getElementById('res-net').innerText = netVal.toFixed(2) + ' ₽';
         }

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-TRACKER // CYBER TERMINAL</title>
+    <title>S-TRACKER // TERMINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         :root {
             --bg-deep: #050508;
-            --card-bg: rgba(10, 14, 25, 0.7);
+            --card-bg: rgba(10, 14, 25, 0.75);
             --neon-green: #00ff66;
             --neon-cyan: #00e5ff;
             --neon-purple: #b000ff;
@@ -25,6 +25,7 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-deep); border-left: 1px solid rgba(0,229,255,0.2); }
         ::-webkit-scrollbar-thumb { background: var(--grad-primary); border-radius: 4px; box-shadow: var(--glow-cyan); }
+        
         body {
             background-color: var(--bg-deep);
             color: var(--text-pure);
@@ -37,6 +38,32 @@
                 linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
         }
+
+        /* АНИМАЦИИ */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes laserScan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,255,102,0.3); }
+            50% { box-shadow: 0 0 25px rgba(0,255,102,0.7); }
+        }
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: 12px; padding: 25px; margin-bottom: 30px;
+            position: relative; border: 1px solid rgba(0, 229, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 229, 255, 0.05);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
         .navbar {
             background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(15px);
             border-top: 2px solid; border-image: var(--grad-primary) 1;
@@ -69,18 +96,14 @@
             padding: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); box-shadow: 0 5px 20px rgba(0,229,255,0.05);
         }
         .content { padding: 0 15px 120px 15px; max-width: 850px; margin: 0 auto; width: 100%; }
-        .card {
-            background: var(--card-bg); border-radius: 12px; padding: 25px; margin-bottom: 30px;
-            position: relative; border: 1px solid rgba(0, 229, 255, 0.15);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 229, 255, 0.05);
-        }
+
         .balance-title {
             color: var(--neon-cyan); font-size: 14px; text-transform: uppercase; letter-spacing: 3px;
             font-weight: 700; display: flex; align-items: center; gap: 10px;
         }
         .balance-title::before {
             content: ''; display: block; width: 8px; height: 8px; background: var(--neon-green);
-            box-shadow: var(--glow-green); border-radius: 50%;
+            box-shadow: var(--glow-green); border-radius: 50%; animation: dotPulse 1.5s infinite;
         }
         .balance-amount {
             font-size: 56px; font-weight: 800; margin: 15px 0;
@@ -114,6 +137,14 @@
             transition: 0.2s;
         }
         .del-btn:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055; }
+        
+        .edit-balance-btn {
+            background: rgba(0, 229, 255, 0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
+            width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center;
+            justify-content: center; transition: 0.2s; margin-left: 10px; font-size: 14px;
+        }
+        .edit-balance-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: var(--glow-cyan); }
+
         .tx-list { display: flex; flex-direction: column; gap: 15px; }
         .tx-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -121,7 +152,9 @@
             padding: 20px 25px; border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.2);
             border-left: 6px solid var(--text-muted); position: relative; overflow: hidden; transition: 0.3s;
         }
-        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+        .tx-item:hover { transform: translateX(5px); border-color: var(--neon-cyan); }
+
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; animation: dotPulse 2s infinite; }
         .dot-green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
         .dot-orange { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
         .dot-red { background: #ff0055; box-shadow: 0 0 8px #ff0055; }
@@ -137,11 +170,21 @@
             padding: 12px 25px; border: 1px solid rgba(0,229,255,0.2); border-radius: 50px;
         }
         .currency-active { color: var(--text-pure); }
+
         .goal-bar {
-            width: 100%; height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2);
-            border-radius: 5px; margin: 10px 0; overflow: hidden;
+            width: 100%; height: 12px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2);
+            border-radius: 6px; margin: 10px 0; overflow: hidden; position: relative;
         }
-        .goal-fill { height: 100%; background: var(--grad-primary); box-shadow: var(--glow-cyan); }
+        .goal-fill {
+            height: 100%; background: var(--grad-primary); box-shadow: var(--glow-cyan);
+            position: relative; transition: width 0.8s ease-in-out;
+        }
+        .goal-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 40px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            animation: laserScan 2s infinite linear;
+        }
+
         @media (min-width: 900px) {
             body { flex-direction: row; }
             .navbar {
@@ -219,7 +262,7 @@
 
     <main class="content">
         
-        <!-- Карточка Балансов -->
+        <!-- Карточка Балансов с возможностью ручного редактирования -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="balance-title">ЗАРАБОТОК ЗА МЕСЯЦ</div>
@@ -234,20 +277,34 @@
 
             <hr style="border: 0; border-top: 1px solid rgba(0, 229, 255, 0.15); margin: 20px 0;">
 
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">ОБЩИЙ БАЛАНС ЗА ВСЁ ВРЕМЯ</div>
-                    <div style="font-size: 26px; font-weight: 800; color: var(--text-pure); font-family: 'JetBrains Mono', monospace; margin-top: 5px;">
-                        {{ "%.2f"|format(all_time_balance) }} ₽
+                    <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">
+                        ОБЩИЙ БАЛАНС ЗА ВСЁ ВРЕМЯ
                     </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                        <span id="all-time-display" style="font-size: 26px; font-weight: 800; color: var(--text-pure); font-family: 'JetBrains Mono', monospace;">
+                            {{ "%.2f"|format(all_time_balance) }} ₽
+                        </span>
+                        <button class="edit-balance-btn" onclick="toggleEditBalance()"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+
+                    <!-- Скрытая форма редактирования -->
+                    <form id="edit-balance-form" method="POST" action="/update_all_time_balance" style="display: none; margin-top: 10px;">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" step="0.01" name="all_time_balance" value="{{ all_time_balance }}" style="padding: 8px 12px; font-size: 14px; width: 160px;" required>
+                            <button type="submit" class="btn-primary" style="margin-top: 0; padding: 8px 15px; font-size: 13px;">ОК</button>
+                            <button type="button" class="del-btn" onclick="toggleEditBalance()" style="width: 34px; height: 34px;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </form>
                 </div>
                 <div style="text-align: right; font-size: 12px; color: var(--text-muted);">
-                    Автоперенос в конце месяца
+                    Накопленный доход
                 </div>
             </div>
         </div>
 
-        <!-- 50 Рангов -->
+        <!-- 50 Рангов с неоновым лазерным лучом -->
         <div class="card">
             <div class="balance-title" style="justify-content: space-between;">
                 <span>RANK {{ rank.num }} // {{ rank.name }}</span>
@@ -348,5 +405,11 @@
 
     </main>
 
+    <script>
+        function toggleEditBalance() {
+            const form = document.getElementById('edit-balance-form');
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>

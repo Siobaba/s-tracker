@@ -10,13 +10,16 @@ def index():
     db = get_db()
     transactions = db.execute('SELECT * FROM transactions ORDER BY id DESC').fetchall()
     
-    total_balance = sum(
-        tx['amount'] if tx['category'] == 'Доход' else -tx['amount']
-        for tx in transactions
-    )
+    received = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход')
+    expected = 0.0
+    total = received
     
     db.close()
-    return render_template('index.html', transactions=transactions, total_balance=total_balance)
+    return render_template('index.html', 
+                           transactions=transactions, 
+                           received=received, 
+                           expected=expected, 
+                           total=total)
 
 @app.route('/add', methods=['POST'])
 def add_transaction():

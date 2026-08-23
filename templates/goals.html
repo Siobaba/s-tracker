@@ -1,73 +1,142 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-TRACKER // GOALS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        :root { --bg-deep: #050508; --card-bg: rgba(10, 14, 25, 0.7); --neon-green: #00ff66; --neon-cyan: #00e5ff; --neon-purple: #b000ff; --grad-primary: linear-gradient(135deg, var(--neon-green), var(--neon-cyan)); --text-pure: #ffffff; --text-muted: #8ba3b5; --glow-green: 0 0 10px rgba(0, 255, 102, 0.5), 0 0 20px rgba(0, 255, 102, 0.3); --glow-cyan: 0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.3); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, .nav-item { font-family: 'Rajdhani', sans-serif; }
+        input, select { font-family: 'JetBrains Mono', monospace; }
+        body { background-color: var(--bg-deep); color: var(--text-pure); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; background-image: radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.08), transparent 25%), radial-gradient(circle at 85% 30%, rgba(0, 255, 102, 0.08), transparent 25%), linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px; }
+        .navbar { background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(15px); border-top: 2px solid; border-image: var(--grad-primary) 1; display: flex; justify-content: space-around; padding: 15px 10px; position: fixed; bottom: 0; width: 100%; z-index: 100; box-shadow: 0 -10px 30px rgba(0,229,255,0.15); }
+        .nav-brand, .nav-profile { display: none; }
+        .nav-links { display: flex; justify-content: space-around; width: 100%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-decoration: none; transition: 0.3s; position: relative; }
+        .nav-item i { font-size: 22px; }
+        .nav-item:hover, .nav-item.active { color: var(--neon-cyan); }
+        .nav-item.active i { color: var(--neon-green); transform: translateY(-5px) scale(1.2); filter: drop-shadow(var(--glow-green)); }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 30px; height: 3px; background: var(--neon-cyan); box-shadow: var(--glow-cyan); border-radius: 2px; }
+        .mobile-header { display: flex; align-items: center; justify-content: space-between; font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 800; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); }
+        .content { padding: 0 15px 120px 15px; max-width: 850px; margin: 0 auto; width: 100%; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 25px; margin-bottom: 30px; position: relative; border: 1px solid rgba(0, 229, 255, 0.15); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        .balance-title { color: var(--neon-cyan); font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .balance-title::before { content: ''; display: block; width: 8px; height: 8px; background: var(--neon-green); box-shadow: var(--glow-green); border-radius: 50%; }
+        .custom-form { display: flex; flex-direction: column; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        .form-group label { font-size: 13px; text-transform: uppercase; color: var(--neon-cyan); font-weight: 700; }
+        .form-row { display: flex; gap: 20px; } .form-row .form-group { flex: 1; }
+        input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 229, 255, 0.3); padding: 16px; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 700; outline: none; width: 100%; }
+        input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
+        .btn-primary { background: linear-gradient(45deg, rgba(0, 255, 102, 0.1), rgba(0, 229, 255, 0.1)); border: 2px solid var(--neon-green); color: var(--neon-green); padding: 18px; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 3px; cursor: pointer; transition: 0.3s; width: 100%; box-shadow: var(--glow-green); }
+        .btn-primary:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 30px rgba(0,255,102,0.6); }
+        .del-btn { background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; color: #ff0055; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .del-btn:hover { background: #ff0055; color: #fff; }
+        .tx-list { display: flex; flex-direction: column; gap: 15px; }
+        .tx-item { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(10,14,25,0.9), rgba(5,7,12,0.9)); padding: 20px 25px; border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.2); border-left: 6px solid var(--neon-cyan); }
+        .goal-bar { width: 100%; height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .goal-fill { height: 100%; background: var(--grad-primary); box-shadow: var(--glow-cyan); }
+        @media (min-width: 900px) {
+            body { flex-direction: row; }
+            .navbar { flex-direction: column; justify-content: flex-start; gap: 20px; width: 300px; height: 100vh; position: fixed; left: 0; top: 0; border-top: none; border-right: 2px solid rgba(0,229,255,0.2); padding: 50px 25px; background: linear-gradient(180deg, rgba(5,7,12,0.95), rgba(2,3,5,0.98)); z-index: 1000; }
+            .nav-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 50px; font-size: 28px; font-weight: 800; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 4px; }
+            .nav-brand i { color: var(--neon-green); -webkit-text-fill-color: initial; }
+            .nav-links { flex-direction: column; gap: 15px; flex: 1; justify-content: flex-start; }
+            .nav-item { flex-direction: row; gap: 20px; font-size: 16px; padding: 20px; background: rgba(0,229,255,0.02); border: 1px solid rgba(0,229,255,0.1); border-radius: 8px; }
+            .nav-item:hover, .nav-item.active { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); transform: translateX(10px); }
+            .mobile-header { display: none; }
+            .content { margin-left: 300px; padding: 60px 70px; max-width: 1400px; width: calc(100% - 300px); }
+        }
+        @media (max-width: 768px) {
+            body { padding: 5px !important; }
+            .content { padding: 5px !important; width: 100% !important; }
+            .form-row { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
 
-{% block content %}
-    <h2 style="margin-bottom: 25px; text-transform: uppercase; color: var(--neon-cyan); letter-spacing: 2px; grid-column: 1/-1;">
-        <i class="fa-solid fa-crosshairs"></i> Финансовые цели
-    </h2>
+    <header class="mobile-header">
+        <div><i class="fa-solid fa-bullseye"></i> ЦЕЛИ</div>
+    </header>
 
-    <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; align-items: start;">
-        <!-- Форма добавления цели -->
-        <div>
-            <div class="card" style="position: sticky; top: 40px;">
-                <div class="balance-title" style="margin-bottom: 20px; color: var(--neon-cyan);">Новая цель</div>
-                <form action="/add_goal" method="POST" class="custom-form">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-bolt"></i> S-TRACKER
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-item">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/goals" class="nav-item active">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>Цели</span>
+            </a>
+            <a href="/calc" class="nav-item">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Комиссия</span>
+            </a>
+            <a href="/ideas" class="nav-item">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Идеи</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="content">
+        
+        <div class="card">
+            <div class="balance-title" style="margin-bottom: 20px;">СОЗДАТЬ ЦЕЛЬ</div>
+            <form method="POST" action="/add_goal" class="custom-form">
+                <div class="form-row">
                     <div class="form-group">
                         <label>Название цели</label>
-                        <input type="text" name="title" placeholder="Например: Новый ПК, Тачка" required>
+                        <input type="text" name="title" placeholder="Например: Новый ноутбук" required>
                     </div>
                     <div class="form-group">
-                        <label>Целевая сумма ($)</label>
-                        <input type="number" step="0.01" name="target_amount" placeholder="1000.00" required>
+                        <label>Целевая сумма (₽)</label>
+                        <input type="number" step="0.01" name="target" placeholder="100000" required>
                     </div>
                     <div class="form-group">
-                        <label>Дедлайн</label>
-                        <input type="date" name="deadline">
+                        <label>Уже накоплено (₽)</label>
+                        <input type="number" step="0.01" name="current" placeholder="0">
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%;">
-                        <i class="fa-solid fa-plus"></i> Создать цель
-                    </button>
-                </form>
+                </div>
+                <button type="submit" class="btn-primary">+ Зафиксировать цель</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="balance-title" style="margin-bottom: 20px;">АКТИВНЫЕ ЦЕЛИ</div>
+            <div class="tx-list">
+                {% for g in goals %}
+                <div class="tx-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="color: #fff; font-size: 20px;">{{ g.title }}</h4>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="color: var(--neon-cyan); font-family: monospace; font-weight: 700; font-size: 18px;">
+                                {{ "%.0f"|format(g.current_amount) }} / {{ "%.0f"|format(g.target_amount) }} ₽
+                            </span>
+                            <form method="POST" action="/delete_goal/{{ g.id }}" style="margin: 0;">
+                                <button type="submit" class="del-btn"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="goal-bar" style="margin: 0;">
+                        <div class="goal-fill" style="width: {{ (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0 }}%;"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align: center; color: var(--text-muted); padding: 25px;">Активных целей пока нет.</div>
+                {% endfor %}
             </div>
         </div>
 
-        <!-- Список целей с прогресс-барами -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            {% for goal in goals %}
-                {% set percent = (goal.current_amount / goal.target_amount * 100) if goal.target_amount > 0 else 0 %}
-                {% set percent_clamped = 100 if percent > 100 else percent %}
-                <div class="card" style="margin-bottom: 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <div>
-                            <h4 style="font-size: 20px; color: #fff; margin-bottom: 4px;">{{ goal.title }}</h4>
-                            <span style="color: var(--text-muted); font-size: 13px;">Дедлайн: {{ goal.deadline or 'Не указан' }}</span>
-                        </div>
-                        <a href="/delete_goal/{{ goal.id }}" class="action-btn del-btn" title="Удалить цель">
-                            <i class="fa-solid fa-xmark"></i>
-                        </a>
-                    </div>
+    </main>
 
-                    <!-- Прогресс по деньгам -->
-                    <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 16px; margin-bottom: 8px; font-weight: 700;">
-                        <span><span class="money-val" data-usd="{{ goal.current_amount }}">${{ "%.2f"|format(goal.current_amount) }}</span></span>
-                        <span style="color: var(--text-muted);">из <span class="money-val" data-usd="{{ goal.target_amount }}">${{ "%.2f"|format(goal.target_amount) }}</span> ({{ "%.1f"|format(percent) }}%)</span>
-                    </div>
-
-                    <!-- Прогресс-бар -->
-                    <div style="width: 100%; background: rgba(0,0,0,0.6); height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,229,255,0.2); margin-bottom: 15px;">
-                        <div style="width: {{ percent_clamped }}%; background: var(--grad-primary); height: 100%; box-shadow: var(--glow-cyan); transition: width 0.5s ease;"></div>
-                    </div>
-
-                    <!-- Кнопка пополнения копилки -->
-                    <form action="/contribute_goal/{{ goal.id }}" method="POST" style="display: flex; gap: 10px;">
-                        <input type="number" step="0.01" name="sum_add" placeholder="Сумма вклада ($)" required style="padding: 8px 12px; font-size: 14px;">
-                        <button type="submit" class="filter-btn" style="background: rgba(0,255,102,0.1); border-color: var(--neon-green); color: var(--neon-green); cursor: pointer;">
-                            + Добавить
-                        </button>
-                    </form>
-                </div>
-            {% else %}
-                <p style="color: var(--text-muted); text-align: center; margin-top: 40px;">Активных целей пока нет.</p>
-            {% endfor %}
-        </div>
-    </div>
-{% endblock %}
+</body>
+</html>

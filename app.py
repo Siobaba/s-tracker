@@ -68,13 +68,9 @@ def index():
     
     transactions = db.execute('SELECT * FROM transactions ORDER BY id DESC').fetchall()
     ideas = db.execute('SELECT id, title FROM ideas').fetchall()
-    goals = db.execute('SELECT * FROM goals ORDER BY id DESC').fetchall()
     history = db.execute('SELECT * FROM monthly_history ORDER BY month_key DESC').fetchall()
     
-    # Считаем только 'received' (зачтенные) для месячного профита
     month_earned = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'received' and tx['date'].startswith(current_month_str))
-    
-    # Считаем сумму 'pending' (в ожидании) за этот месяц
     month_pending = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'pending' and tx['date'].startswith(current_month_str))
     
     row_all = db.execute("SELECT value FROM settings WHERE key = 'all_time_balance'").fetchone()
@@ -88,13 +84,34 @@ def index():
     return render_template('index.html', 
                            transactions=transactions, 
                            ideas=ideas,
-                           goals=goals,
                            history=history,
                            month_earned=month_earned, 
                            month_pending=month_pending,
                            all_time_balance=all_time_balance,
                            rank=rank_info,
                            quote=random_quote)
+
+@app.route('/goals')
+def goals_page():
+    db = get_db()
+    goals = db.execute('SELECT * FROM goals ORDER BY id DESC').fetchall()
+    db.close()
+    return render_template('goals.html', goals=goals)
+
+@app.route('/calc')
+def calc_page():
+    return render_template('calc.html')
+
+@app.route('/ideas')
+def ideas_page():
+    db = get_db()
+    ideas = db.execute('SELECT * FROM ideas ORDER BY id DESC').fetchall()
+    ideas_data = []
+    for idea in ideas:
+        earned = db.execute('SELECT SUM(amount) FROM transactions WHERE idea_id = ? AND category = "Доход" AND status = "received"', (idea['id'],)).fetchone()[0] or 0.0
+        ideas_data.append({"info": idea, "earned": earned})
+    db.close()
+    return render_template('ideas.html', ideas=ideas_data)
 
 @app.route('/add', methods=['POST'])
 def add_transaction():
@@ -127,12 +144,11 @@ def add_goal():
     title = request.form.get('title')
     target = float(request.form.get('target', 0))
     current = float(request.form.get('current', 0))
-    
     db = get_db()
     db.execute('INSERT INTO goals (title, target_amount, current_amount) VALUES (?, ?, ?)', (title, target, current))
     db.commit()
     db.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('goals_page'))
 
 @app.route('/delete_goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
@@ -140,20 +156,7 @@ def delete_goal(goal_id):
     db.execute('DELETE FROM goals WHERE id = ?', (goal_id,))
     db.commit()
     db.close()
-    return redirect(url_for('index'))
-
-@app.route('/ideas')
-def ideas_page():
-    db = get_db()
-    ideas = db.execute('SELECT * FROM ideas ORDER BY id DESC').fetchall()
-    
-    ideas_data = []
-    for idea in ideas:
-        earned = db.execute('SELECT SUM(amount) FROM transactions WHERE idea_id = ? AND category = "Доход" AND status = "received"', (idea['id'],)).fetchone()[0] or 0.0
-        ideas_data.append({"info": idea, "earned": earned})
-        
-    db.close()
-    return render_template('ideas.html', ideas=ideas_data)
+    return redirect(url_for('goals_page'))
 
 @app.route('/add_idea', methods=['POST'])
 def add_idea():

@@ -314,3 +314,39 @@ input:checked + .slider:before {
 
     .content > h2 { grid-column: 1 / -1; }
 }
+/* Мобильная адаптивность: выстраиваем всё в одну колонку на экранах меньше 768px */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        padding: 5px !important;
+        margin: 0 !important;
+    }
+
+    /* Превращаем любые ряды, сетки и флексы в вертикальные колонки */
+    .row, .container, .main-container, .dashboard, .grid, main {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 5px !important;
+        margin: 0 auto !important;
+    }
+
+    /* Растягиваем карточки, формы и блоки на всю ширину экрана */
+    .card, .form-container, .target-card, .box, div {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Делаем инпуты и кнопки удобными для нажатия пальцем */
+    input, select, button, .btn {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 16px !important; /* Предотвращает автозум на iOS */
+    }
+}

@@ -6,7 +6,6 @@ from database import init_db, get_db
 app = Flask(__name__)
 init_db()
 
-# 50 РАНГОВ С ПЛАВНОЙ ПРОГРЕССИЕЙ
 RANKS = [
     (1, "Новичок", 50), (2, "Первые шаги", 100), (3, "Стажёр", 200), (4, "Практикант", 350),
     (5, "Студент", 500), (6, "Юниор", 700), (7, "Энтузиаст", 1000), (8, "Фрилансер", 1300),
@@ -69,12 +68,15 @@ def index():
     
     transactions = db.execute('SELECT * FROM transactions ORDER BY id DESC').fetchall()
     ideas = db.execute('SELECT id, title FROM ideas').fetchall()
+    goals = db.execute('SELECT * FROM goals ORDER BY id DESC').fetchall()
     history = db.execute('SELECT * FROM monthly_history ORDER BY month_key DESC').fetchall()
     
-    # Заработок строго за текущий месяц
-    month_earned = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['date'].startswith(current_month_str))
+    # Считаем только 'received' (зачтенные) для месячного профита
+    month_earned = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'received' and tx['date'].startswith(current_month_str))
     
-    # Общий накопленный баланс
+    # Считаем сумму 'pending' (в ожидании) за этот месяц
+    month_pending = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'pending' and tx['date'].startswith(current_month_str))
+    
     row_all = db.execute("SELECT value FROM settings WHERE key = 'all_time_balance'").fetchone()
     all_time_base = float(row_all['value']) if row_all else 0.0
     all_time_balance = all_time_base + month_earned
@@ -86,8 +88,10 @@ def index():
     return render_template('index.html', 
                            transactions=transactions, 
                            ideas=ideas,
+                           goals=goals,
                            history=history,
                            month_earned=month_earned, 
+                           month_pending=month_pending,
                            all_time_balance=all_time_balance,
                            rank=rank_info,
                            quote=random_quote)
@@ -97,14 +101,43 @@ def add_transaction():
     title = request.form.get('title')
     amount = float(request.form.get('amount', 0))
     category = request.form.get('category', 'Доход')
+    status = request.form.get('status', 'received')
     idea_id = request.form.get('idea_id')
     idea_id = int(idea_id) if idea_id and idea_id.isdigit() else None
     date = datetime.now().strftime('%Y-%m-%d %H:%M')
     
     db = get_db()
     db.execute('''INSERT INTO transactions (title, amount, category, date, status, idea_id) 
-                  VALUES (?, ?, ?, ?, 'received', ?)''',
-               (title, amount, category, date, idea_id))
+                  VALUES (?, ?, ?, ?, ?, ?)''',
+               (title, amount, category, date, status, idea_id))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
+
+@app.route('/delete_tx/<int:tx_id>', methods=['POST'])
+def delete_tx(tx_id):
+    db = get_db()
+    db.execute('DELETE FROM transactions WHERE id = ?', (tx_id,))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
+
+@app.route('/add_goal', methods=['POST'])
+def add_goal():
+    title = request.form.get('title')
+    target = float(request.form.get('target', 0))
+    current = float(request.form.get('current', 0))
+    
+    db = get_db()
+    db.execute('INSERT INTO goals (title, target_amount, current_amount) VALUES (?, ?, ?)', (title, target, current))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
+
+@app.route('/delete_goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    db = get_db()
+    db.execute('DELETE FROM goals WHERE id = ?', (goal_id,))
     db.commit()
     db.close()
     return redirect(url_for('index'))
@@ -114,10 +147,9 @@ def ideas_page():
     db = get_db()
     ideas = db.execute('SELECT * FROM ideas ORDER BY id DESC').fetchall()
     
-    # Подсчет заработанного по каждой идее
     ideas_data = []
     for idea in ideas:
-        earned = db.execute('SELECT SUM(amount) FROM transactions WHERE idea_id = ? AND category = "Доход"', (idea['id'],)).fetchone()[0] or 0.0
+        earned = db.execute('SELECT SUM(amount) FROM transactions WHERE idea_id = ? AND category = "Доход" AND status = "received"', (idea['id'],)).fetchone()[0] or 0.0
         ideas_data.append({"info": idea, "earned": earned})
         
     db.close()

@@ -3,381 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-TRACKER // TERMINAL</title>
+    <title>S-TRACKER // CYBER TERMINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
-
-        :root {
-            --bg-deep: #050508;
-            --card-bg: rgba(10, 14, 25, 0.9);
-            --neon-green: #00ff66;
-            --neon-cyan: #00e5ff;
-            --neon-purple: #b000ff;
-            --grad-primary: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
-            --text-pure: #ffffff;
-            --text-muted: #8ba3b5;
-            --glow-green: 0 0 10px rgba(0, 255, 102, 0.5), 0 0 20px rgba(0, 255, 102, 0.3);
-            --glow-cyan: 0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.3);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        h1, h2, h3, h4, .nav-item { font-family: 'Rajdhani', sans-serif; }
-        .money-val, .tx-amount, input { font-family: 'JetBrains Mono', monospace; }
-
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-pure);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-            background-image:
-                radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(0, 255, 102, 0.08), transparent 25%),
-                linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-        }
-
-        /* Навигация */
-        .navbar {
-            background: rgba(5, 7, 12, 0.95);
-            backdrop-filter: blur(15px);
-            border-top: 2px solid;
-            border-image: var(--grad-primary) 1;
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 10px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 100;
-            box-shadow: 0 -10px 30px rgba(0,229,255,0.15);
-        }
-
-        .nav-brand {
-            display: none;
-            font-size: 28px;
-            font-weight: 800;
-            background: var(--grad-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 4px;
-        }
-
-        .nav-links { display: flex; justify-content: space-around; width: 100%; }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .nav-item i { font-size: 22px; }
-        .nav-item:hover, .nav-item.active { color: var(--neon-cyan); }
-        .nav-item.active i {
-            color: var(--neon-green);
-            filter: drop-shadow(var(--glow-green));
-        }
-
-        .nav-profile { display: none; }
-
-        .mobile-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 22px;
-            font-weight: 800;
-            background: var(--grad-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            padding: 20px;
-            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-        }
-
-        /* Контент */
-        .content {
-            padding: 20px 15px 120px 15px;
-            max-width: 850px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            position: relative;
-            border: 1px solid rgba(0, 229, 255, 0.2);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
-
-        .balance-title {
-            color: var(--neon-cyan);
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .balance-title::before {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 8px;
-            background: var(--neon-green);
-            box-shadow: var(--glow-green);
-            border-radius: 50%;
-        }
-
-        .balance-amount {
-            font-size: 50px;
-            font-weight: 800;
-            margin: 15px 0;
-            background: var(--grad-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 0px 8px rgba(0, 255, 102, 0.3));
-        }
-
-        /* Формы */
-        .custom-form { display: flex; flex-direction: column; gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 12px; text-transform: uppercase; color: var(--neon-cyan); font-weight: 700; }
-        .form-row { display: flex; gap: 15px; }
-        .form-row .form-group { flex: 1; }
-
-        input, select {
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(0, 229, 255, 0.3);
-            padding: 14px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            outline: none;
-            width: 100%;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, rgba(0, 255, 102, 0.1), rgba(0, 229, 255, 0.1));
-            border: 2px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 16px;
-            border-radius: 8px;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 800;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-            width: 100%;
-            box-shadow: var(--glow-green);
-        }
-
-        .btn-primary:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 25px rgba(0,255,102,0.6);
-        }
-
-        /* Список операций */
-        .tx-list { display: flex; flex-direction: column; gap: 12px; }
-        .tx-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(90deg, rgba(10,14,25,0.95), rgba(5,7,12,0.95));
-            padding: 16px 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 229, 255, 0.15);
-            border-left: 5px solid var(--text-muted);
-        }
-
-        .tx-info h4 { font-size: 18px; margin-bottom: 4px; color: #fff; }
-        .tx-info span { color: var(--text-muted); font-size: 12px; font-weight: 600; }
-        .tx-amount { font-size: 20px; font-weight: 700; font-family: monospace; }
-
-        .status-received { border-left-color: var(--neon-green); }
-        .status-received .tx-amount { color: var(--neon-green); text-shadow: var(--glow-green); }
-
-        .status-cancelled { border-left-color: #ff0055; }
-        .status-cancelled .tx-amount { color: #ff0055; }
-
-        /* ПК Версия (Сайдбар слева) */
-        @media (min-width: 900px) {
-            body { flex-direction: row; }
-
-            .navbar {
-                flex-direction: column;
-                justify-content: flex-start;
-                gap: 20px;
-                width: 280px;
-                height: 100vh;
-                position: fixed;
-                left: 0;
-                top: 0;
-                border-top: none;
-                border-right: 2px solid rgba(0,229,255,0.2);
-                padding: 40px 20px;
-                background: linear-gradient(180deg, rgba(5,7,12,0.98), rgba(2,3,5,0.98));
-            }
-
-            .nav-brand { display: flex; align-items: center; margin-bottom: 40px; }
-            .nav-links { flex-direction: column; gap: 15px; width: 100%; }
-
-            .nav-item {
-                flex-direction: row;
-                gap: 15px;
-                font-size: 15px;
-                padding: 16px;
-                background: rgba(0,229,255,0.02);
-                border: 1px solid rgba(0,229,255,0.1);
-                border-radius: 8px;
-                width: 100%;
-            }
-
-            .nav-item:hover, .nav-item.active {
-                background: rgba(0,229,255,0.08);
-                border-color: rgba(0,229,255,0.3);
-                transform: translateX(5px);
-            }
-
-            .nav-profile {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                padding: 15px;
-                background: rgba(0,0,0,0.5);
-                border-radius: 10px;
-                border: 1px solid rgba(0,255,102,0.2);
-                margin-top: auto;
-            }
-
-            .avatar {
-                width: 42px;
-                height: 42px;
-                background: var(--grad-primary);
-                color: #000;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 18px;
-            }
-
-            .user-name { font-weight: 800; font-size: 14px; color: #fff; }
-            .user-role { font-size: 11px; font-weight: 700; color: var(--neon-cyan); letter-spacing: 1px; }
-
-            .mobile-header { display: none; }
-
-            .content {
-                margin-left: 280px;
-                padding: 50px;
-                max-width: 1100px;
-                width: calc(100% - 280px);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <!-- Мобильная шапка -->
     <header class="mobile-header">
         <div><i class="fa-solid fa-bolt"></i> S-TRACKER</div>
-        <div style="font-size: 12px; color: var(--neon-cyan); font-family: monospace;">ONLINE</div>
+        <div class="currency-switch-wrapper" style="padding: 4px 12px; font-size: 14px;">
+            <span>RANK {{ rank.num }}</span>
+        </div>
     </header>
 
-    <!-- Навигация -->
     <nav class="navbar">
         <div class="nav-brand">
-            <i class="fa-solid fa-bolt" style="color: var(--neon-green); margin-right: 8px;"></i> S-TRACKER
+            <i class="fa-solid fa-bolt"></i> S-TRACKER
         </div>
         <div class="nav-links">
             <a href="/" class="nav-item active">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Главная</span>
             </a>
+            <a href="/ideas" class="nav-item">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Идеи</span>
+            </a>
+            <a href="#calc-section" class="nav-item">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Комиссия</span>
+            </a>
             <a href="#history-section" class="nav-item">
                 <i class="fa-solid fa-wallet"></i>
                 <span>История</span>
-            </a>
-            <a href="#add-section" class="nav-item">
-                <i class="fa-solid fa-circle-plus"></i>
-                <span>Добавить</span>
             </a>
         </div>
         <div class="nav-profile">
             <div class="avatar"><i class="fa-solid fa-user-ninja"></i></div>
             <div>
-                <div class="user-name">OPERATOR</div>
-                <div class="user-role">TERMINAL ACCESS</div>
+                <div class="user-name">RANK {{ rank.num }}</div>
+                <div class="user-role">{{ rank.name }}</div>
             </div>
         </div>
     </nav>
 
-    <!-- Главная область -->
     <main class="content">
         
-        <!-- Баланс -->
+        <!-- 1. Главная карточка Балансов -->
         <div class="card">
-            <div class="balance-title">Чистый баланс</div>
-            <div class="balance-amount"><span class="money-val">{{ "%.2f"|format(received) }}</span> ₽</div>
-            <div style="color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                <i class="fa-solid fa-shield-halved" style="color: var(--neon-cyan);"></i> СИСТЕМА УЧЁТА АКТИВНА
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="balance-title">ЗАРАБОТОК ЗА МЕСЯЦ</div>
+                <div class="currency-switch-wrapper">
+                    <span class="currency-active">₽</span>
+                </div>
+            </div>
+            
+            <div class="balance-amount">{{ "%.2f"|format(month_earned) }} ₽</div>
+            <div style="font-size: 13px; font-weight: 700; color: var(--neon-cyan); letter-spacing: 2px;">ЗА МЕСЯЦ</div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(0, 229, 255, 0.15); margin: 20px 0;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">ОБЩИЙ БАЛАНС ЗА ВСЁ ВРЕМЯ</div>
+                    <div style="font-size: 26px; font-weight: 800; color: var(--text-pure); font-family: 'JetBrains Mono', monospace; margin-top: 5px;">
+                        {{ "%.2f"|format(all_time_balance) }} ₽
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: var(--text-muted);">
+                    Автоперенос в конце месяца
+                </div>
             </div>
         </div>
 
-        <!-- Добавить -->
-        <div class="card" id="add-section">
+        <!-- 2. Карточка Ранга (50 уровней) -->
+        <div class="card">
+            <div class="balance-title" style="justify-content: space-between;">
+                <span>RANK {{ rank.num }} // {{ rank.name }}</span>
+                <span>{{ "%.0f"|format(rank.current_val) }} / {{ rank.target_val }} ₽</span>
+            </div>
+            
+            <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; margin: 15px 0; overflow: hidden;">
+                <div style="height: 100%; width: {{ rank.progress_pct }}%; background: var(--grad-primary); box-shadow: var(--glow-green);"></div>
+            </div>
+            
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                До следующего ранга: <span style="color: var(--neon-green);">{{ "%.2f"|format(rank.needed) }} ₽</span>
+            </div>
+        </div>
+
+        <!-- 3. Калькулятор комиссий -->
+        <div class="card" id="calc-section">
+            <div class="balance-title" style="margin-bottom: 20px;">КАЛЬКУЛЯТОР КОМИССИИ</div>
+            <div class="custom-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Площадка</label>
+                        <select id="preset-platform" onchange="applyPreset()">
+                            <option value="custom">Своя комиссия</option>
+                            <option value="playerok">Playerok (10%)</option>
+                            <option value="fanpay">FanPay (8%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма сделки (₽)</label>
+                        <input type="number" id="calc-amount" placeholder="1000" oninput="runCalc()">
+                    </div>
+                    <div class="form-group">
+                        <label>Комиссия (%)</label>
+                        <input type="number" id="calc-fee-rate" placeholder="10" value="10" oninput="runCalc()">
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,229,255,0.2); display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Комиссия</div>
+                        <div id="res-fee" style="font-size: 18px; font-weight: 700; color: #ff0055; font-family: monospace;">0.00 ₽</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Получите чистыми</div>
+                        <div id="res-net" style="font-size: 18px; font-weight: 700; color: var(--neon-green); font-family: monospace;">0.00 ₽</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Форма добавления операции -->
+        <div class="card">
             <div class="balance-title" style="margin-bottom: 20px;">Новая операция</div>
             <form method="POST" action="/add" class="custom-form">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Источник / Название</label>
-                        <input type="text" name="title" placeholder="Например, Продажа" required>
+                        <input type="text" name="title" placeholder="Например, Продажа ключа" required>
                     </div>
                     <div class="form-group">
                         <label>Сумма (₽)</label>
                         <input type="number" step="0.01" name="amount" placeholder="0.00" required>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Тип транзакции</label>
-                    <select name="category">
-                        <option value="Доход">Доход (+)</option>
-                        <option value="Расход">Расход (-)</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select name="category">
+                            <option value="Доход">Доход (+)</option>
+                            <option value="Расход">Расход (-)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Связать с идеей (опционально)</label>
+                        <select name="idea_id">
+                            <option value="">Без связи с идеей</option>
+                            {% for id_item in ideas %}
+                            <option value="{{ id_item.id }}">{{ id_item.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary">Зафиксировать профит</button>
             </form>
         </div>
 
-        <!-- История -->
+        <!-- 5. История операций -->
         <div class="card" id="history-section">
             <div class="balance-title" style="margin-bottom: 20px;">История транзакций</div>
-            
             <div class="tx-list">
                 {% for tx in transactions %}
                 <div class="tx-item {{ 'status-received' if tx.category == 'Доход' else 'status-cancelled' }}">
@@ -391,13 +180,57 @@
                 </div>
                 {% else %}
                 <div style="text-align: center; color: var(--text-muted); padding: 25px;">
-                    Транзакций пока нет. Добавьте первую запись выше!
+                    Транзакций пока нет.
                 </div>
                 {% endfor %}
             </div>
         </div>
 
+        <!-- 6. Архив месяцев -->
+        {% if history %}
+        <div class="card">
+            <div class="balance-title" style="margin-bottom: 20px;">ИСТОРИЯ ЗАВЕРШЁННЫХ МЕСЯЦЕВ</div>
+            <div class="tx-list">
+                {% for h in history %}
+                <div class="tx-item" style="border-left-color: var(--neon-cyan);">
+                    <div class="tx-info">
+                        <h4>{{ h.month_name }}</h4>
+                        <span>Операций: {{ h.income_count + h.expense_count }} // Расходы: {{ "%.2f"|format(h.expenses_amount) }} ₽</span>
+                    </div>
+                    <div class="tx-amount" style="color: var(--neon-cyan);">
+                        {{ "%.2f"|format(h.net_income) }} ₽
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Блок случайной цитаты -->
+        <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-style: italic; margin-top: 30px;">
+            {{ quote }}
+        </div>
+
     </main>
 
+    <script>
+        function applyPreset() {
+            const platform = document.getElementById('preset-platform').value;
+            const feeInput = document.getElementById('calc-fee-rate');
+            if (platform === 'playerok') feeInput.value = 10;
+            else if (platform === 'fanpay') feeInput.value = 8;
+            runCalc();
+        }
+
+        function runCalc() {
+            const amount = parseFloat(document.getElementById('calc-amount').value) || 0;
+            const feeRate = parseFloat(document.getElementById('calc-fee-rate').value) || 0;
+            const feeVal = (amount * feeRate) / 100;
+            const netVal = amount - feeVal;
+            
+            document.getElementById('res-fee').innerText = feeVal.toFixed(2) + ' ₽';
+            document.getElementById('res-net').innerText = netVal.toFixed(2) + ' ₽';
+        }
+    </script>
 </body>
 </html>

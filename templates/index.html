@@ -1,35 +1,115 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-TRACKER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-{% block content %}
-    <div class="card">
-        <div class="balance-title">Чистый заработок</div>
-        <div class="balance-amount">
-            <span class="money-val" data-usd="{{ received }}">${{ "%.2f"|format(received) }}</span>
+    <header class="mobile-header">
+        <div><i class="fa-solid fa-bolt"></i> S-TRACKER</div>
+        <div class="currency-switch-wrapper" style="padding: 4px 12px; font-size: 14px;">
+            <span>ONLINE</span>
         </div>
-        <div class="balance-title" style="color: var(--status-orange);">
-            В ожидании: <span class="money-val" data-usd="{{ expected }}">${{ "%.2f"|format(expected) }}</span>
+    </header>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-bolt"></i> S-TRACKER
         </div>
-    </div>
+        <div class="nav-links">
+            <a href="/" class="nav-item active">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Главная</span>
+            </a>
+            <a href="#history-section" class="nav-item">
+                <i class="fa-solid fa-wallet"></i>
+                <span>История</span>
+            </a>
+            <a href="#add-section" class="nav-item">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Добавить</span>
+            </a>
+        </div>
+        <div class="nav-profile">
+            <div class="avatar"><i class="fa-solid fa-user-ninja"></i></div>
+            <div>
+                <div class="user-name">OPERATOR</div>
+                <div class="user-role">TERMINAL ACCESS</div>
+            </div>
+        </div>
+    </nav>
 
-    <h3 style="margin-bottom: 14px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; color: var(--text-muted);">
-        Последние поступления
-    </h3>
-
-    <div class="tx-list">
-        {% for item in incomes %}
-            <div class="tx-item status-{{ item.status }}">
-                <div class="tx-info">
-                    <h4>{{ item.source }}</h4>
-                    <span>{{ item.date }} &bull; {{ item.comment }}</span>
-                </div>
-                <div class="tx-amount">
-                    <span class="money-val" data-usd="{{ item.amount }}">+${{ "%.2f"|format(item.amount) }}</span>
+    <main class="content">
+        
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="balance-title">Чистый заработок</div>
+                <div class="currency-switch-wrapper">
+                    <span>$</span>
+                    <label class="switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="currency-active">₽</span>
                 </div>
             </div>
-        {% else %}
-            <p style="color: var(--text-muted); font-size: 14px;">
-                Пока пусто. <a href="/add_test" style="color: var(--neon-green); text-decoration: none; font-weight: bold;">Добавить тест</a>
-            </p>
-        {% endfor %}
-    </div>
-{% endblock %}
+            <div class="balance-amount"><span class="money-val">{{ "%.2f"|format(received) }}</span> ₽</div>
+            <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
+                <i class="fa-solid fa-shield-halved" style="color: var(--neon-cyan);"></i> СИСТЕМА УЧЁТА АКТИВНА
+            </div>
+        </div>
+
+        <div class="card" id="add-section">
+            <div class="balance-title" style="margin-bottom: 20px;">Новая операция</div>
+            <form method="POST" action="/add" class="custom-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Источник / Название</label>
+                        <input type="text" name="title" placeholder="Например, Продажа" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Тип транзакции</label>
+                    <select name="category">
+                        <option value="Доход">Доход (+)</option>
+                        <option value="Расход">Расход (-)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Зафиксировать профит</button>
+            </form>
+        </div>
+
+        <div class="card" id="history-section">
+            <div class="balance-title" style="margin-bottom: 20px;">История транзакций</div>
+            
+            <div class="tx-list">
+                {% for tx in transactions %}
+                <div class="tx-item {{ 'status-received' if tx.category == 'Доход' else 'status-cancelled' }}">
+                    <div class="tx-info">
+                        <h4>{{ tx.title }}</h4>
+                        <span>{{ tx.date }} // {{ tx.category }}</span>
+                    </div>
+                    <div class="tx-amount">
+                        {{ "+" if tx.category == 'Доход' else "-" }}{{ "%.2f"|format(tx.amount) }} ₽
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align: center; color: var(--text-muted); padding: 25px;">
+                    Транзакций пока нет. Добавьте первую запись выше!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

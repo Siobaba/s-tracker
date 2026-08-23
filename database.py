@@ -5,7 +5,7 @@ def init_db():
     conn = sqlite3.connect('finance.db')
     cursor = conn.cursor()
     
-    # 1. Таблица операций (связана с идеями)
+    # 1. Таблица операций
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +18,17 @@ def init_db():
         )
     ''')
     
-    # 2. Таблица идей заработка
+    # 2. Таблица целей
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            target_amount REAL NOT NULL,
+            current_amount REAL DEFAULT 0
+        )
+    ''')
+    
+    # 3. Таблица идей заработка
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ideas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +46,7 @@ def init_db():
         )
     ''')
 
-    # 3. Таблица истории месяцев
+    # 4. Таблица истории месяцев
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS monthly_history (
             month_key TEXT PRIMARY KEY,
@@ -49,7 +59,7 @@ def init_db():
         )
     ''')
 
-    # 4. Таблица настроек и общего баланса
+    # 5. Таблица настроек
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
@@ -58,12 +68,10 @@ def init_db():
     ''')
     conn.commit()
     
-    # Инициализация общего баланса
     cursor.execute("SELECT value FROM settings WHERE key = 'all_time_balance'")
     if not cursor.fetchone():
         cursor.execute("INSERT INTO settings (key, value) VALUES ('all_time_balance', '0.0')")
         
-    # Логика проверки и автопереноса закрытых месяцев
     current_month = datetime.now().strftime('%Y-%m')
     cursor.execute("SELECT value FROM settings WHERE key = 'last_checked_month'")
     row = cursor.fetchone()
@@ -73,7 +81,6 @@ def init_db():
     else:
         last_month = row[0]
         if last_month != current_month:
-            # Считаем заработок за закрытый месяц
             cursor.execute("SELECT amount, category, status FROM transactions WHERE date LIKE ?", (f"{last_month}%",))
             past_txs = cursor.fetchall()
             
@@ -81,7 +88,6 @@ def init_db():
             exp_sum = sum(tx[0] for tx in past_txs if tx[1] == 'Расход')
             net = inc_sum - exp_sum
             
-            # Записываем в архив истории месяцев
             cursor.execute('''
                 INSERT OR REPLACE INTO monthly_history 
                 (month_key, month_name, earned_amount, expenses_amount, net_income, income_count, expense_count)
@@ -90,7 +96,6 @@ def init_db():
                   len([tx for tx in past_txs if tx[1] == 'Доход']), 
                   len([tx for tx in past_txs if tx[1] == 'Расход'])))
             
-            # Переносим чистый профит в общий накопленный баланс
             if net > 0:
                 cursor.execute("SELECT value FROM settings WHERE key = 'all_time_balance'")
                 curr_all = float(cursor.fetchone()[0])

@@ -74,8 +74,7 @@ def index():
     month_pending = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'pending' and tx['date'].startswith(current_month_str))
     
     row_all = db.execute("SELECT value FROM settings WHERE key = 'all_time_balance'").fetchone()
-    all_time_base = float(row_all['value']) if row_all else 0.0
-    all_time_balance = all_time_base + month_earned
+    all_time_balance = float(row_all['value']) if row_all else 0.0
     
     rank_info = calculate_rank(month_earned)
     random_quote = random.choice(QUOTES)
@@ -90,6 +89,15 @@ def index():
                            all_time_balance=all_time_balance,
                            rank=rank_info,
                            quote=random_quote)
+
+@app.route('/update_all_time_balance', methods=['POST'])
+def update_all_time_balance():
+    new_val = float(request.form.get('all_time_balance', 0))
+    db = get_db()
+    db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('all_time_balance', ?)", (str(new_val),))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
 
 @app.route('/goals')
 def goals_page():

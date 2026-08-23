@@ -1,214 +1,337 @@
 from flask import Flask, render_template, request, redirect, url_for
-import database
-import datetime
+from datetime import datetime
+from database import init_db, get_db, get_all_time_balance
 
 app = Flask(__name__)
-database.create_tables()
+init_db()
 
+# 50 рангов под более доступные суммы (от 0$ до 50 000$)
+RANKS = [
+    (0, "Стажёр на минималке (0$)"),
+    (10, "Первая десятка баксов"),
+    (25, "Студент-скриптер"),
+    (50, "Уверенный старт ($50)"),
+    (75, "Мелкий фрилансер"),
+    (100, "Сотка в кармане ($100)"),
+    (150, "Барыга с форума"),
+    (200, "Любитель быстрых сделок"),
+    (300, "Мастер авито и перепродаж"),
+    (400, "Стабильный середняк"),
+    (500, "Пятихаточник ($500)"),
+    (650, "Почти элита"),
+    (800, "Магнат микробизнеса"),
+    (1000, "Первая тысяча ($1K)"),
+    (1200, "Оптовый поставщик"),
+    (1500, "Автоматизатор процессов"),
+    (1800, "Владелец серого паблика"),
+    (2200, "Тир-2 Стример"),
+    (2600, "Серый кардинал чатов"),
+    (3000, "Трёшка кеша ($3K)"),
+    (3500, "Теневой трейдер"),
+    (4000, "Директор по трафику"),
+    (4500, "Крипто-энтузиаст"),
+    (5000, "Пять тысяч зелени ($5K)"),
+    (6000, "Владелец софта/ботов"),
+    (7000, "Рыночный хищник"),
+    (8500, "Почти акула бизнеса"),
+    (10000, "Десятка баксов ($10K)"),
+    (12000, "Хозяин маркетплейсов"),
+    (15000, "Элитный спекулянт"),
+    (18000, "Управляющий активами"),
+    (22000, "Крупный игрок"),
+    (25000, "Четверть сотни мультов... точнее тысяч ($25K)"),
+    (30000, "Властитель котировок"),
+    (35000, "Полумагнат"),
+    (40000, "Хозяин жизни"),
+    (50000, "Пятьдесят тысяч ($50K)"),
+    (60000, "Элита цифрового рынка"),
+    (75000, "Теневой олигарх"),
+    (100000, "Шестизначный зверь ($100K)"),
+    (125000, "Хозяин биржи"),
+    (150000, "Финансовый титан"),
+    (200000, "Миллионер из чата"),
+    (250000, "Кукловод цен"),
+    (300000, "Легенда Уолл-стрит"),
+    (400000, "Рыночный босс"),
+    (500000, "Полумиллионер"),
+    (750000, "Почти миллиардер"),
+    (1000000, "Финансовый Бог ($1M)"),
+    (5000000, "Властелин Вселенной")
+]
 
-# ==========================================
-# 1. ГЛАВНАЯ СТРАНИЦА (ДАШБОРД)
-# ==========================================
+def get_rank(amount):
+    current_rank = RANKS[0][1]
+    for threshold, rank_name in RANKS:
+        if amount >= threshold:
+            current_rank = rank_name
+        else:
+            break
+    return current_rank
+
+# Много цитат (увеличенная база)
+QUOTES = [
+    "«Рынок может оставаться иррациональным дольше, чем вы можете оставаться платежеспособным.» — Джон Мейнард Кейнс",
+    "«Единственный способ не проиграть — это играть по-своему.»",
+    "«Покупай на страхе, продавай на жадности. Или теряй всё.»",
+    "«SEC следит за каждым твоим шагом. Будь умнее.»",
+    "«Деньги не спят. И твой баланс тоже не должен.»",
+    "«Риск — это плата за успех на Уолл-стрит.»",
+    "«Если ты самый умный в комнате, значит, ты не в том месте.»",
+    "«Успех в трейдинге — это хладнокровие, расчет и немного удачи в нужный момент.»",
+    "«Каждая ошибка на рынке — это просто платная лекция.»",
+    "«Не бойся больших убытков, бойся отсутствия плана.»",
+    "«Сначала ты работаешь на репутацию, потом репутация работает на тебя.»",
+    "«Хочешь разбогатеть — перестань слушать советы тех, кто беднее тебя.»",
+    "«Настоящий трейдер видит возможности там, где остальные видят панику.»"
+]
+
+# Идеи по заработку (подробные и детализированные)
+BUSINESS_IDEAS = [
+    {
+        "title": "Автоматизированные Telegram-боты и MiniApps (Leadteh / Python)",
+        "category": "Разработка / IT",
+        "difficulty": "Средняя",
+        "potential": "Высокий ($1000 - $5000/мес)",
+        "description": "Создание кастомных ботов и мини-приложений для бизнесов, интернет-магазинов или каналов. Спрос огромный, так как каждый бренд хочет автоматизировать продажи в Telegram."
+    },
+    {
+        "title": "Арбитраж и перепродажа цифровых активов (Playerok / FunPay)",
+        "category": "Трейдинг / Игры",
+        "difficulty": "Низкая",
+        "potential": "Средний ($500 - $2000/мес)",
+        "description": "Мониторинг цен на игрове аккаунты, ключи, валюту и подписки на зарубежных площадках с последующей перепродажей с наценкой на русскоязычных маркетплейсах."
+    },
+    {
+        "title": "Разработка языковых и AI-ассистентов под ключ",
+        "category": "Искусственный интеллект",
+        "difficulty": "Высокая",
+        "potential": "Очень высокий ($3000+ / мес)",
+        "description": "Интеграция локальных ИИ-моделей и чат-ботов с CRM-системами компаний, календарями и мессенджерами для автоматизации техподдержки и клиентского сервиса."
+    },
+    {
+        "title": "Создание и монетизация нишевых контент-каналов (Telegram / Twitch)",
+        "category": "Медиа / Стриминг",
+        "difficulty": "Средняя",
+        "potential": "Неограниченный",
+        "description": "Ведение экспертного или развлекательного канала на тему киберспорта, IT, крипты или трейдинга с продажей рекламных интеграций и партнерских программ."
+    },
+    {
+        "title": "Фриланс по настройке защищенных сетей, VPN и серверов (Kamatera / VPS)",
+        "category": "Администрирование",
+        "difficulty": "Высокая",
+        "potential": "Высокий ($1500 - $4000/мес)",
+        "description": "Помощь компаниям и частным лицам в развертывании личных облачных серверов, защищенных туннелей, настройки прокси и сетевой безопасности."
+    }
+]
+
 @app.route('/')
 def index():
-    conn = database.get_connection()
-    incomes = conn.execute('SELECT * FROM income ORDER BY date DESC LIMIT 5').fetchall()
+    db = get_db()
+    transactions = db.execute('SELECT * FROM transactions ORDER BY id DESC').fetchall()
+    
+    current_month_str = datetime.now().strftime('%Y-%m')
+    
+    month_total = 0
+    for tx in transactions:
+        if tx['date'].startswith(current_month_str):
+            month_total += tx['amount']
+            
+    current_rank = get_rank(month_total)
+    all_time_balance = get_all_time_balance()
+    
+    db.close()
+    return render_template('index.html', 
+                           transactions=transactions, 
+                           month_total=month_total, 
+                           all_time_balance=all_time_balance,
+                           current_rank=current_rank,
+                           quotes=QUOTES)
 
-    received_val = conn.execute('SELECT SUM(amount) FROM income WHERE status = "received"').fetchone()[0]
-    expected_val = conn.execute('SELECT SUM(amount) FROM income WHERE status = "expected"').fetchone()[0]
-    expenses_val = conn.execute('SELECT SUM(amount) FROM expenses').fetchone()[0]
+@app.route('/ideas')
+def ideas():
+    return render_template('ideas.html', ideas=BUSINESS_IDEAS)
 
-    received = received_val if received_val is not None else 0.0
-    expected = expected_val if expected_val is not None else 0.0
-    expenses = expenses_val if expenses_val is not None else 0.0
-
-    conn.close()
-    return render_template('index.html', incomes=incomes, received=received, expected=expected, expenses=expenses)
-
-
-# ==========================================
-# 2. РАЗДЕЛ "ДОХОДЫ"
-# ==========================================
-@app.route('/incomes')
-def incomes_page():
-    status_filter = request.args.get('status', 'all')
-    query = 'SELECT * FROM income WHERE 1=1'
-    params = []
-
-    if status_filter != 'all':
-        query += ' AND status = ?'
-        params.append(status_filter)
-
-    query += ' ORDER BY date DESC'
-
-    conn = database.get_connection()
-    incomes = conn.execute(query, params).fetchall()
-    conn.close()
-
-    return render_template('incomes.html', incomes=incomes, current_status=status_filter)
-
-
-@app.route('/add_income', methods=['POST'])
-def add_income():
-    source = request.form.get('source')
-    amount = float(request.form.get('amount', 0))
-    date = request.form.get('date') or datetime.datetime.now().strftime("%Y-%m-%d")
-    status = request.form.get('status')
-    comment = request.form.get('comment', '')
-
-    conn = database.get_connection()
-    conn.execute('INSERT INTO income (source, amount, date, status, comment) VALUES (?, ?, ?, ?, ?)',
-                 (source, amount, date, status, comment))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('incomes_page'))
-
-
-@app.route('/delete_income/<int:item_id>')
-def delete_income(item_id):
-    conn = database.get_connection()
-    conn.execute('DELETE FROM income WHERE id = ?', (item_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('incomes_page'))
-
-
-@app.route('/mark_received/<int:item_id>')
-def mark_received(item_id):
-    conn = database.get_connection()
-    conn.execute('UPDATE income SET status = "received" WHERE id = ?', (item_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('incomes_page'))
-
-
-# ==========================================
-# 3. РАЗДЕЛ "РАСХОДЫ"
-# ==========================================
-@app.route('/expenses')
-def expenses_page():
-    conn = database.get_connection()
-    expenses = conn.execute('SELECT * FROM expenses ORDER BY date DESC').fetchall()
-    total_expenses = conn.execute('SELECT SUM(amount) FROM expenses').fetchone()[0] or 0.0
-    conn.close()
-    return render_template('expenses.html', expenses=expenses, total_expenses=total_expenses)
-
-
-@app.route('/add_expense', methods=['POST'])
-def add_expense():
-    category = request.form.get('category')
-    amount = float(request.form.get('amount', 0))
-    date = request.form.get('date') or datetime.datetime.now().strftime("%Y-%m-%d")
-    comment = request.form.get('comment', '')
-
-    conn = database.get_connection()
-    conn.execute('INSERT INTO expenses (category, amount, date, comment) VALUES (?, ?, ?, ?)',
-                 (category, amount, date, comment))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('expenses_page'))
-
-
-@app.route('/delete_expense/<int:item_id>')
-def delete_expense(item_id):
-    conn = database.get_connection()
-    conn.execute('DELETE FROM expenses WHERE id = ?', (item_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('expenses_page'))
-
-
-# ==========================================
-# 4. РАЗДЕЛ "ЦЕЛИ"
-# ==========================================
-@app.route('/goals')
-def goals_page():
-    conn = database.get_connection()
-    goals = conn.execute('SELECT * FROM goals ORDER BY deadline ASC').fetchall()
-    conn.close()
-    return render_template('goals.html', goals=goals)
-
-
-@app.route('/add_goal', methods=['POST'])
-def add_goal():
+@app.route('/add', methods=['POST'])
+def add_transaction():
     title = request.form.get('title')
-    target_amount = float(request.form.get('target_amount', 0))
-    deadline = request.form.get('deadline')
-
-    conn = database.get_connection()
-    conn.execute('INSERT INTO goals (title, target_amount, deadline) VALUES (?, ?, ?)',
-                 (title, target_amount, deadline))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('goals_page'))
-
-
-@app.route('/contribute_goal/<int:goal_id>', methods=['POST'])
-def contribute_goal(goal_id):
-    sum_add = float(request.form.get('sum_add', 0))
-    conn = database.get_connection()
-    conn.execute('UPDATE goals SET current_amount = current_amount + ? WHERE id = ?', (sum_add, goal_id))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('goals_page'))
-
-
-@app.route('/delete_goal/<int:goal_id>')
-def delete_goal(goal_id):
-    conn = database.get_connection()
-    conn.execute('DELETE FROM goals WHERE id = ?', (goal_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('goals_page'))
-
-
-# ==========================================
-# 5. АНАЛИТИКА
-# ==========================================
-@app.route('/analytics')
-def analytics_page():
-    conn = database.get_connection()
-    total_received = conn.execute('SELECT SUM(amount) FROM income WHERE status = "received"').fetchone()[0] or 0.0
-    total_expenses = conn.execute('SELECT SUM(amount) FROM expenses').fetchone()[0] or 0.0
-    net_profit = total_received - total_expenses
-
-    max_income = conn.execute('SELECT MAX(amount) FROM income WHERE status = "received"').fetchone()[0] or 0.0
-    avg_income = conn.execute('SELECT AVG(amount) FROM income WHERE status = "received"').fetchone()[0] or 0.0
-
-    sources_stat = conn.execute('''
-        SELECT source, SUM(amount) as total, COUNT(id) as count 
-        FROM income WHERE status = "received" GROUP BY source ORDER BY total DESC
-    ''').fetchall()
-
-    conn.close()
-    return render_template('analytics.html',
-                           total_received=total_received,
-                           total_expenses=total_expenses,
-                           net_profit=net_profit,
-                           max_income=max_income,
-                           avg_income=avg_income,
-                           sources_stat=sources_stat)
-
-
-# ==========================================
-# 6. ТЕСТОВЫЕ ДАННЫЕ
-# ==========================================
-@app.route('/add_test')
-def add_test():
-    conn = database.get_connection()
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    conn.execute('INSERT INTO income (source, amount, date, status, comment) VALUES (?, ?, ?, ?, ?)',
-                 ('Партнерка Mysor', 30.0, today, 'expected', 'За ролик на 416k'))
-    conn.execute('INSERT INTO income (source, amount, date, status, comment) VALUES (?, ?, ?, ?, ?)',
-                 ('TikTok аккаунт', 15.5, today, 'received', 'Продажа старого профиля'))
-    conn.execute('INSERT INTO expenses (category, amount, date, comment) VALUES (?, ?, ?, ?)',
-                 ('Сервер (Kamatera)', 12.0, today, 'Оплата хостинга бота'))
-    conn.execute('INSERT INTO goals (title, target_amount, current_amount, deadline) VALUES (?, ?, ?, ?)',
-                 ('Новый ПК для монтажа', 1200.0, 450.0, '2026-12-31'))
-    conn.commit()
-    conn.close()
+    amount = float(request.form.get('amount', 0))
+    category = request.form.get('category', 'Доход')
+    date = datetime.now().strftime('%Y-%m-%d %H:%M')
+    
+    db = get_db()
+    db.execute('INSERT INTO transactions (title, amount, category, date) VALUES (?, ?, ?, ?)',
+               (title, amount, category, date))
+    db.commit()
+    db.close()
     return redirect(url_for('index'))
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=7860)from flask import Flask, render_template, request, redirect, url_for
+from datetime import datetime
+from database import init_db, get_db, get_all_time_balance
+
+app = Flask(__name__)
+init_db()
+
+# 50 рангов под более доступные суммы (от 0$ до 50 000$)
+RANKS = [
+    (0, "Стажёр на минималке (0$)"),
+    (10, "Первая десятка баксов"),
+    (25, "Студент-скриптер"),
+    (50, "Уверенный старт ($50)"),
+    (75, "Мелкий фрилансер"),
+    (100, "Сотка в кармане ($100)"),
+    (150, "Барыга с форума"),
+    (200, "Любитель быстрых сделок"),
+    (300, "Мастер авито и перепродаж"),
+    (400, "Стабильный середняк"),
+    (500, "Пятихаточник ($500)"),
+    (650, "Почти элита"),
+    (800, "Магнат микробизнеса"),
+    (1000, "Первая тысяча ($1K)"),
+    (1200, "Оптовый поставщик"),
+    (1500, "Автоматизатор процессов"),
+    (1800, "Владелец серого паблика"),
+    (2200, "Тир-2 Стример"),
+    (2600, "Серый кардинал чатов"),
+    (3000, "Трёшка кеша ($3K)"),
+    (3500, "Теневой трейдер"),
+    (4000, "Директор по трафику"),
+    (4500, "Крипто-энтузиаст"),
+    (5000, "Пять тысяч зелени ($5K)"),
+    (6000, "Владелец софта/ботов"),
+    (7000, "Рыночный хищник"),
+    (8500, "Почти акула бизнеса"),
+    (10000, "Десятка баксов ($10K)"),
+    (12000, "Хозяин маркетплейсов"),
+    (15000, "Элитный спекулянт"),
+    (18000, "Управляющий активами"),
+    (22000, "Крупный игрок"),
+    (25000, "Четверть сотни мультов... точнее тысяч ($25K)"),
+    (30000, "Властитель котировок"),
+    (35000, "Полумагнат"),
+    (40000, "Хозяин жизни"),
+    (50000, "Пятьдесят тысяч ($50K)"),
+    (60000, "Элита цифрового рынка"),
+    (75000, "Теневой олигарх"),
+    (100000, "Шестизначный зверь ($100K)"),
+    (125000, "Хозяин биржи"),
+    (150000, "Финансовый титан"),
+    (200000, "Миллионер из чата"),
+    (250000, "Кукловод цен"),
+    (300000, "Легенда Уолл-стрит"),
+    (400000, "Рыночный босс"),
+    (500000, "Полумиллионер"),
+    (750000, "Почти миллиардер"),
+    (1000000, "Финансовый Бог ($1M)"),
+    (5000000, "Властелин Вселенной")
+]
+
+def get_rank(amount):
+    current_rank = RANKS[0][1]
+    for threshold, rank_name in RANKS:
+        if amount >= threshold:
+            current_rank = rank_name
+        else:
+            break
+    return current_rank
+
+# Много цитат (увеличенная база)
+QUOTES = [
+    "«Рынок может оставаться иррациональным дольше, чем вы можете оставаться платежеспособным.» — Джон Мейнард Кейнс",
+    "«Единственный способ не проиграть — это играть по-своему.»",
+    "«Покупай на страхе, продавай на жадности. Или теряй всё.»",
+    "«SEC следит за каждым твоим шагом. Будь умнее.»",
+    "«Деньги не спят. И твой баланс тоже не должен.»",
+    "«Риск — это плата за успех на Уолл-стрит.»",
+    "«Если ты самый умный в комнате, значит, ты не в том месте.»",
+    "«Успех в трейдинге — это хладнокровие, расчет и немного удачи в нужный момент.»",
+    "«Каждая ошибка на рынке — это просто платная лекция.»",
+    "«Не бойся больших убытков, бойся отсутствия плана.»",
+    "«Сначала ты работаешь на репутацию, потом репутация работает на тебя.»",
+    "«Хочешь разбогатеть — перестань слушать советы тех, кто беднее тебя.»",
+    "«Настоящий трейдер видит возможности там, где остальные видят панику.»"
+]
+
+# Идеи по заработку (подробные и детализированные)
+BUSINESS_IDEAS = [
+    {
+        "title": "Автоматизированные Telegram-боты и MiniApps (Leadteh / Python)",
+        "category": "Разработка / IT",
+        "difficulty": "Средняя",
+        "potential": "Высокий ($1000 - $5000/мес)",
+        "description": "Создание кастомных ботов и мини-приложений для бизнесов, интернет-магазинов или каналов. Спрос огромный, так как каждый бренд хочет автоматизировать продажи в Telegram."
+    },
+    {
+        "title": "Арбитраж и перепродажа цифровых активов (Playerok / FunPay)",
+        "category": "Трейдинг / Игры",
+        "difficulty": "Низкая",
+        "potential": "Средний ($500 - $2000/мес)",
+        "description": "Мониторинг цен на игрове аккаунты, ключи, валюту и подписки на зарубежных площадках с последующей перепродажей с наценкой на русскоязычных маркетплейсах."
+    },
+    {
+        "title": "Разработка языковых и AI-ассистентов под ключ",
+        "category": "Искусственный интеллект",
+        "difficulty": "Высокая",
+        "potential": "Очень высокий ($3000+ / мес)",
+        "description": "Интеграция локальных ИИ-моделей и чат-ботов с CRM-системами компаний, календарями и мессенджерами для автоматизации техподдержки и клиентского сервиса."
+    },
+    {
+        "title": "Создание и монетизация нишевых контент-каналов (Telegram / Twitch)",
+        "category": "Медиа / Стриминг",
+        "difficulty": "Средняя",
+        "potential": "Неограниченный",
+        "description": "Ведение экспертного или развлекательного канала на тему киберспорта, IT, крипты или трейдинга с продажей рекламных интеграций и партнерских программ."
+    },
+    {
+        "title": "Фриланс по настройке защищенных сетей, VPN и серверов (Kamatera / VPS)",
+        "category": "Администрирование",
+        "difficulty": "Высокая",
+        "potential": "Высокий ($1500 - $4000/мес)",
+        "description": "Помощь компаниям и частным лицам в развертывании личных облачных серверов, защищенных туннелей, настройки прокси и сетевой безопасности."
+    }
+]
+
+@app.route('/')
+def index():
+    db = get_db()
+    transactions = db.execute('SELECT * FROM transactions ORDER BY id DESC').fetchall()
+    
+    current_month_str = datetime.now().strftime('%Y-%m')
+    
+    month_total = 0
+    for tx in transactions:
+        if tx['date'].startswith(current_month_str):
+            month_total += tx['amount']
+            
+    current_rank = get_rank(month_total)
+    all_time_balance = get_all_time_balance()
+    
+    db.close()
+    return render_template('index.html', 
+                           transactions=transactions, 
+                           month_total=month_total, 
+                           all_time_balance=all_time_balance,
+                           current_rank=current_rank,
+                           quotes=QUOTES)
+
+@app.route('/ideas')
+def ideas():
+    return render_template('ideas.html', ideas=BUSINESS_IDEAS)
+
+@app.route('/add', methods=['POST'])
+def add_transaction():
+    title = request.form.get('title')
+    amount = float(request.form.get('amount', 0))
+    category = request.form.get('category', 'Доход')
+    date = datetime.now().strftime('%Y-%m-%d %H:%M')
+    
+    db = get_db()
+    db.execute('INSERT INTO transactions (title, amount, category, date) VALUES (?, ?, ?, ?)',
+               (title, amount, category, date))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=7860)

@@ -1,1 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-TRACKER // IDEAS HUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
+    <header class="mobile-header">
+        <div><i class="fa-solid fa-lightbulb"></i> ИДЕИ ЗАРАБОТКА</div>
+    </header>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-bolt"></i> S-TRACKER
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-item">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/ideas" class="nav-item active">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Идеи</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="content">
+        
+        <!-- Форма создания идеи -->
+        <div class="card">
+            <div class="balance-title" style="margin-bottom: 20px;">СОЗДАТЬ ИДЕЮ</div>
+            <form method="POST" action="/add_idea" class="custom-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Название идеи</label>
+                        <input type="text" name="title" placeholder="Создание TikTok-контента" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select name="category">
+                            <option value="TikTok">TikTok</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="Игры">Игры</option>
+                            <option value="Продажа аккаунтов">Продажа аккаунтов</option>
+                            <option value="Контент">Контент</option>
+                            <option value="Фриланс">Фриланс</option>
+                            <option value="Программирование">Программирование</option>
+                            <option value="Vibe coding">Vibe coding</option>
+                            <option value="AI">AI</option>
+                            <option value="Перепродажа">Перепродажа</option>
+                            <option value="Цифровые товары">Цифровые товары</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Потенциальный доход</label>
+                        <input type="text" name="potential" placeholder="50–200 ₽/день">
+                    </div>
+                    <div class="form-group">
+                        <label>Сложность</label>
+                        <select name="difficulty">
+                            <option value="Низкая">Низкая</option>
+                            <option value="Средняя">Средняя</option>
+                            <option value="Высокая">Высокая</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Статус</label>
+                        <select name="status">
+                            <option value="Новая">Новая</option>
+                            <option value="Изучаю">Изучаю</option>
+                            <option value="В работе">В работе</option>
+                            <option value="Проверяю">Проверяю</option>
+                            <option value="Работает">Работает</option>
+                            <option value="Не работает">Не работает</option>
+                            <option value="Завершено">Завершено</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Вложения</label>
+                        <input type="text" name="investments" placeholder="0 ₽">
+                    </div>
+                    <div class="form-group">
+                        <label>Время на запуск</label>
+                        <input type="text" name="launch_time" placeholder="1–2 дня">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Описание</label>
+                    <input type="text" name="description" placeholder="Подробности реализации идеи">
+                </div>
+
+                <div class="form-group">
+                    <label>Заметки / мысли</label>
+                    <input type="text" name="notes" placeholder="Текущие выводы и шаги">
+                </div>
+
+                <button type="submit" class="btn-primary">Сохранить идею</button>
+            </form>
+        </div>
+
+        <!-- Список созданных идей -->
+        <div class="card">
+            <div class="balance-title" style="margin-bottom: 20px;">БАЗА ИДЕЙ</div>
+            <div class="tx-list">
+                {% for item in ideas %}
+                <div class="tx-item" style="flex-direction: column; align-items: flex-start; gap: 10px; border-left-color: var(--neon-cyan);">
+                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <h4 style="font-size: 20px; color: #fff;">{{ item.info.title }}</h4>
+                        <span style="color: var(--neon-green); font-weight: 700; font-family: monospace;">Заработано: {{ "%.2f"|format(item.earned) }} ₽</span>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span style="background: rgba(0,229,255,0.1); color: var(--neon-cyan); padding: 4px 8px; border-radius: 4px; font-size: 11px;">{{ item.info.category }}</span>
+                        <span style="background: rgba(0,255,102,0.1); color: var(--neon-green); padding: 4px 8px; border-radius: 4px; font-size: 11px;">Статус: {{ item.info.status }}</span>
+                        <span style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 11px;">Сложность: {{ item.info.difficulty }}</span>
+                    </div>
+
+                    {% if item.info.description %}
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">{{ item.info.description }}</div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="text-align: center; color: var(--text-muted); padding: 25px;">Идей пока нет. Добавьте первую!</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

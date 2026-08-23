@@ -1,50 +1,35 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
-        <!-- Левая колонка: Баланс -->
-        <div>
-            <div class="card">
-                <div class="balance-title">Чистый заработок</div>
-                <div class="balance-amount">
-                    <span class="money-val" data-usd="{{ received }}">${{ "%.2f"|format(received) }}</span>
-                </div>
-                <div class="balance-title" style="color: #ffaa00; margin-top: 15px;">
-                    В ожидании: <span class="money-val" data-usd="{{ expected }}">${{ "%.2f"|format(expected) }}</span>
-                </div>
-            </div>
-            
-            <div class="card" style="background: rgba(0,229,255,0.02); border-color: rgba(0,229,255,0.1);">
-                <div class="balance-title" style="color: var(--neon-cyan);">Системный статус</div>
-                <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px; line-height: 1.5;">
-                    Все базы данных синхронизированы. Курс валют обновляется в реальном времени. Защита соединения активна.
-                </p>
-            </div>
+    <div class="card">
+        <div class="balance-title">Чистый заработок</div>
+        <div class="balance-amount">
+            <span class="money-val" data-usd="{{ received }}">${{ "%.2f"|format(received) }}</span>
         </div>
+        <div class="balance-title" style="color: var(--status-orange);">
+            В ожидании: <span class="money-val" data-usd="{{ expected }}">${{ "%.2f"|format(expected) }}</span>
+        </div>
+    </div>
 
-        <!-- Правая колонка: Последние поступления -->
-        <div>
-            <h3 style="margin-bottom: 20px; text-transform: uppercase; font-size: 16px; letter-spacing: 2px; color: var(--neon-cyan);">
-                <i class="fa-solid fa-clock-rotate-left"></i> Последние поступления
-            </h3>
-            
-            <div class="tx-list">
-                {% for item in incomes %}
-                    <div class="tx-item status-{{ item.status }}">
-                        <div class="tx-info">
-                            <h4>{{ item.source }}</h4>
-                            <span>{{ item.date }} &bull; {{ item.comment }}</span>
-                        </div>
-                        <div class="tx-amount">
-                            <span class="money-val" data-usd="{{ item.amount }}">+${{ "%.2f"|format(item.amount) }}</span>
-                        </div>
-                    </div>
-                {% else %}
-                    <p style="color: var(--text-muted); font-size: 14px;">
-                        Пока пусто. <a href="/add_test" style="color: var(--neon-green); text-decoration: none; font-weight: bold;">Добавить тест</a>
-                    </p>
-                {% endfor %}
+    <h3 style="margin-bottom: 14px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; color: var(--text-muted);">
+        Последние поступления
+    </h3>
+    
+    <div class="tx-list">
+        {% for item in incomes %}
+            <div class="tx-item status-{{ item.status }}">
+                <div class="tx-info">
+                    <h4>{{ item.source }}</h4>
+                    <span>{{ item.date }} &bull; {{ item.comment }}</span>
+                </div>
+                <div class="tx-amount">
+                    <span class="money-val" data-usd="{{ item.amount }}">+${{ "%.2f"|format(item.amount) }}</span>
+                </div>
             </div>
-        </div>
+        {% else %}
+            <p style="color: var(--text-muted); font-size: 14px;">
+                Пока пусто. <a href="/add_test" style="color: var(--neon-green); text-decoration: none; font-weight: bold;">Добавить тест</a>
+            </p>
+        {% endfor %}
     </div>
 {% endblock %}

@@ -70,7 +70,11 @@ def index():
     ideas = db.execute('SELECT id, title FROM ideas').fetchall()
     history = db.execute('SELECT * FROM monthly_history ORDER BY month_key DESC').fetchall()
     
-    month_earned = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'received' and tx['date'].startswith(current_month_str))
+    # Считаем доходы и вычитаем расходы
+    month_income = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'received' and tx['date'].startswith(current_month_str))
+    month_expense = sum(tx['amount'] for tx in transactions if tx['category'] == 'Расход' and tx['status'] == 'received' and tx['date'].startswith(current_month_str))
+    month_earned = month_income - month_expense
+    
     month_pending = sum(tx['amount'] for tx in transactions if tx['category'] == 'Доход' and tx['status'] == 'pending' and tx['date'].startswith(current_month_str))
     
     row_all = db.execute("SELECT value FROM settings WHERE key = 'all_time_balance'").fetchone()
@@ -139,6 +143,15 @@ def add_transaction():
     db.close()
     return redirect(url_for('index'))
 
+@app.route('/update_tx_status/<int:tx_id>', methods=['POST'])
+def update_tx_status(tx_id):
+    new_status = request.form.get('status')
+    db = get_db()
+    db.execute('UPDATE transactions SET status = ? WHERE id = ?', (new_status, tx_id))
+    db.commit()
+    db.close()
+    return redirect(url_for('index'))
+
 @app.route('/delete_tx/<int:tx_id>', methods=['POST'])
 def delete_tx(tx_id):
     db = get_db()
@@ -146,6 +159,23 @@ def delete_tx(tx_id):
     db.commit()
     db.close()
     return redirect(url_for('index'))
+
+@app.route('/update_idea_status/<int:idea_id>', methods=['POST'])
+def update_idea_status(idea_id):
+    new_status = request.form.get('status')
+    db = get_db()
+    db.execute('UPDATE ideas SET status = ? WHERE id = ?', (new_status, idea_id))
+    db.commit()
+    db.close()
+    return redirect(url_for('ideas_page'))
+
+@app.route('/delete_idea/<int:idea_id>', methods=['POST'])
+def delete_idea(idea_id):
+    db = get_db()
+    db.execute('DELETE FROM ideas WHERE id = ?', (idea_id,))
+    db.commit()
+    db.close()
+    return redirect(url_for('ideas_page'))
 
 @app.route('/add_goal', methods=['POST'])
 def add_goal():

@@ -154,10 +154,6 @@
         }
         .tx-item:hover { transform: translateX(5px); border-color: var(--neon-cyan); }
 
-        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; animation: dotPulse 2s infinite; }
-        .dot-green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
-        .dot-orange { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
-        .dot-red { background: #ff0055; box-shadow: 0 0 8px #ff0055; }
         .status-received { border-left-color: var(--neon-green); }
         .status-received .tx-amount { color: var(--neon-green); text-shadow: var(--glow-green); }
         .status-pending { border-left-color: #ffaa00; }
@@ -272,7 +268,7 @@
             <div class="balance-amount">{{ "%.2f"|format(month_earned) }} ₽</div>
             <div style="display: flex; gap: 20px; font-size: 13px; font-weight: 700;">
                 <span style="color: var(--neon-cyan); letter-spacing: 1px;">ЗА МЕСЯЦ</span>
-                <span style="color: #ffaa00;"><span class="status-dot dot-orange"></span>В ОЖИДАНИИ: {{ "%.2f"|format(month_pending) }} ₽</span>
+                <span style="color: #ffaa00;">В ОЖИДАНИИ: {{ "%.2f"|format(month_pending) }} ₽</span>
             </div>
 
             <hr style="border: 0; border-top: 1px solid rgba(0, 229, 255, 0.15); margin: 20px 0;">
@@ -362,7 +358,7 @@
             </form>
         </div>
 
-        <!-- История операций -->
+        <!-- История операций со сменой статуса -->
         <div class="card">
             <div class="balance-title" style="margin-bottom: 20px;">История транзакций</div>
             <div class="tx-list">
@@ -370,15 +366,17 @@
                 <div class="tx-item status-{{ tx.status }}">
                     <div class="tx-info">
                         <h4>{{ tx.title }}</h4>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            {% if tx.status == 'received' %}
-                                <span class="status-dot dot-green"></span><span style="color: var(--neon-green);">Зачтено</span>
-                            {% elif tx.status == 'pending' %}
-                                <span class="status-dot dot-orange"></span><span style="color: #ffaa00;">Обрабатывается</span>
-                            {% else %}
-                                <span class="status-dot dot-red"></span><span style="color: #ff0055;">Отклонен</span>
-                            {% endif %}
-                            <span>// {{ tx.date }}</span>
+                        <div style="margin-top: 6px;">
+                            <form method="POST" action="/update_tx_status/{{ tx.id }}" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                <select name="status" onchange="this.form.submit()" style="width: auto; padding: 2px 6px; font-size: 11px; font-weight: 700; border-radius: 4px; height: auto; box-shadow: none; background: rgba(0,0,0,0.7); 
+                                    border: 1px solid {% if tx.status == 'received' %}var(--neon-green){% elif tx.status == 'pending' %}#ffaa00{% else %}#ff0055{% endif %}; 
+                                    color: {% if tx.status == 'received' %}var(--neon-green){% elif tx.status == 'pending' %}#ffaa00{% else %}#ff0055{% endif %}; cursor: pointer; text-transform: uppercase;">
+                                    <option value="received" style="color: var(--neon-green);" {% if tx.status == 'received' %}selected{% endif %}>🟢 ЗАЧТЕНО</option>
+                                    <option value="pending" style="color: #ffaa00;" {% if tx.status == 'pending' %}selected{% endif %}>🟠 ОЖИДАНИЕ</option>
+                                    <option value="cancelled" style="color: #ff0055;" {% if tx.status == 'cancelled' %}selected{% endif %}>🔴 ОТМЕНА</option>
+                                </select>
+                                <span style="color: var(--text-muted); font-size: 11px;">// {{ tx.date }}</span>
+                            </form>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px;">
